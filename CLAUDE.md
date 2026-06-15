@@ -59,7 +59,7 @@ scenewright/
 ├── python/
 │   ├── synthesize.py      # Supertonic 합성 브리지
 │   └── requirements.txt
-├── REFERENCE/             # 도메인 지식 카드 (예시: RICE.md, JTBD.md — 당신 주제 카드로 교체/추가)
+├── REFERENCE/             # 도메인 지식 카드 (예시: RICE.md, JTBD.md — 여러분 주제 카드로 교체/추가)
 ├── public/                # 공유 자산 (이모지 등)
 ├── tests/
 └── episodes/{slug}/       # 단계별 JSON, assets/(gitignored), out/(gitignored)
