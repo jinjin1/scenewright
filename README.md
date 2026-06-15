@@ -1,5 +1,7 @@
 # scenewright
 
+**English** · [한국어](README.ko.md)
+
 **A Claude Code–native pipeline that turns a source text into a narrated, Remotion-rendered YouTube explainer video — for any topic, at ~$0 per video.**
 
 You drive it by running slash commands inside a [Claude Code](https://claude.com/claude-code) session. Each step reads and writes a JSON file (`JSON-as-contract`), so every stage is restartable and reviewable. Narration is synthesized **locally** with the Supertonic TTS model (Korean), and frames are rendered with [Remotion](https://remotion.dev). The LLM reasoning happens *inside your Claude Code session*, so there's no API key and no per-video model cost.
