@@ -1,0 +1,52 @@
+{
+  "name": "scenewright",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "description": "Claude Code-native pipeline that turns a source text into a narrated, Remotion-rendered YouTube explainer video.",
+  "engines": {
+    "node": ">=18.18.0"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "preview": "remotion preview src/remotion/index.ts",
+    "render": "tsx src/pipeline/cli/render.ts",
+    "render:cli": "remotion render src/remotion/index.ts",
+    "tts": "tsx src/pipeline/cli/tts.ts",
+    "reconcile": "tsx src/pipeline/cli/reconcile.ts",
+    "lint:script": "tsx src/pipeline/cli/lint-script.ts",
+    "stock": "tsx --env-file-if-exists=.env src/pipeline/cli/stock.ts",
+    "library": "tsx src/pipeline/cli/library.ts",
+    "captions": "tsx src/pipeline/cli/captions.ts",
+    "thumbnail": "tsx src/pipeline/cli/thumbnail.ts"
+  },
+  "dependencies": {
+    "@remotion/animated-emoji": "4.0.467",
+    "@remotion/bundler": "^4.0.0",
+    "@remotion/captions": "^4.0.0",
+    "@remotion/cli": "^4.0.0",
+    "@remotion/google-fonts": "^4.0.0",
+    "@remotion/layout-utils": "4.0.467",
+    "@remotion/noise": "4.0.467",
+    "@remotion/paths": "4.0.467",
+    "@remotion/renderer": "^4.0.0",
+    "@remotion/shapes": "4.0.467",
+    "@remotion/starburst": "4.0.467",
+    "@remotion/transitions": "^4.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.0",
+    "roughjs": "^4.6.6",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "jsdom": "^25.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}

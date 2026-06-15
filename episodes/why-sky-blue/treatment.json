@@ -1,0 +1,46 @@
+{
+  "scenes": [
+    {
+      "id": "scene01",
+      "beat": "Cold open",
+      "purpose": "낮의 파란 하늘과 붉은 노을이 같은 태양빛에서 나온다는 모순을 0~3초에 던져 시청자를 잡는다.",
+      "duration_sec": 22,
+      "visual_concept": "정적 타이틀 카드 금지(콜드 오픈). 새파란 정오 하늘 → 붉은 노을로 디졸브되는 실사 stock 영상 위에, '같은 태양빛인데?' 키네틱 텍스트. 제목 카드는 다음 비트(인사)로 미룸."
+    },
+    {
+      "id": "scene02",
+      "beat": "Setup",
+      "purpose": "우리가 흰빛이라 느끼는 햇빛이 사실 모든 색의 빛이 섞인 것임을 받아들인다.",
+      "duration_sec": 48,
+      "visual_concept": "프리즘이 햇빛을 무지개로 가르는 실사 broll. BulletList로 '빨강=긴 파장 / 파랑·보라=짧은 파장' 대비. 화면 용어는 한·영 병기(파장 (wavelength))."
+    },
+    {
+      "id": "scene03",
+      "beat": "Mechanism",
+      "purpose": "공기 분자가 빛을 흩어내며, 파장이 짧을수록 훨씬 더 많이 흩어진다는 레일리 산란의 핵심을 이해한다.",
+      "duration_sec": 92,
+      "visual_concept": "FlowDiagram 또는 간단한 도식: 햇빛 → 공기 분자 → 사방으로 흩어짐. 파란빛(짧은 파장)이 빨간빛보다 훨씬 강하게 튕기는 걸 두 화살표 굵기로 대비. '레일리 산란 (Rayleigh scattering)' 라벨."
+    },
+    {
+      "id": "scene04",
+      "beat": "Payoff A",
+      "purpose": "흩어진 파란빛이 하늘 전체로 퍼져 어느 방향을 봐도 파랗게 보이는 결론에 도달한다(보라빛이 아닌 이유까지).",
+      "duration_sec": 60,
+      "visual_concept": "맑고 파란 하늘 실사 broll(여러 방향). HighlightedLine으로 '그래서 하늘은 파랗다' 강조. 보라빛 예외는 짧은 BulletList 한 줄로 곁들임."
+    },
+    {
+      "id": "scene05",
+      "beat": "Payoff B (reversal)",
+      "purpose": "해가 낮을 때 빛이 더 긴 대기 경로를 지나며 파란빛을 잃어 붉은색만 남는다는 반전 결론으로 노을을 설명한다.",
+      "duration_sec": 78,
+      "visual_concept": "노을 실사 broll. 간단한 도식: 정오(짧은 경로) vs 해질녘(긴 비스듬한 경로) 비교, 긴 경로에서 파란빛이 도중에 새는 모습. '같은 원리의 양면' 메시지."
+    },
+    {
+      "id": "scene06",
+      "beat": "Closing",
+      "purpose": "레일리 산란 하나로 파란 하늘과 붉은 노을이 모두 설명된다는 핵심을 정리하고 담백하게 닫는다(CTA 없음).",
+      "duration_sec": 26,
+      "visual_concept": "잔잔한 하늘 broll 위 한 줄 요약 자막. 단색 마무리. 구독 유도 없음."
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+node_modules/
+.env
+.env.local
+out/
+
+# Episode artifacts
+episodes/*/assets/audio/
+episodes/*/assets/stock/
+episodes/*/out/
+# render.ts가 렌더 시 루트 public/(emoji 등 공유 자산)을 episode publicDir로 머지한 복사본 — 커밋 제외.
+episodes/*/emoji/
+
+# Cross-episode stock pool — binaries gitignored, metadata (index.json·library.md) tracked.
+assets/stock/pool/
+assets/stock/library.html
+
+# Python venv + voice samples (too large for git)
+python/.venv/
+python/__pycache__/
+*.pyc
+
+# TTS bench artifacts (PoC outputs)
+episodes/_tts-bench/
+
+# Claude Code session lock
+.claude/scheduled_tasks.lock
+
+# Claude Code worktrees (1 세션 = 1 워크트리; 절대 통째로 커밋하지 말 것)
+.claude/worktrees/
+
+# Build / cache
+.vitest/
+coverage/
+dist/
+.DS_Store
+*.log

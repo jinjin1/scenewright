@@ -1,0 +1,221 @@
+{
+  "lines": [
+    {
+      "id": "scene01-line01",
+      "text": "한낮의 하늘은 새파랗습니다. 그런데 해 질 녘이 되면, 똑같은 하늘이 주황과 붉은색으로 물듭니다. 빛을 내는 태양은 그대로인데 말이죠.",
+      "visual": {
+        "component": "HeroImage",
+        "props": {
+          "kind": "video",
+          "overlay": "bottom",
+          "caption": "같은 태양빛, 다른 하늘색",
+          "fallback_color": "#1c2b4a"
+        }
+      },
+      "broll_keywords": ["blue sky daytime", "sunset sky orange", "golden hour sky"]
+    },
+    {
+      "id": "scene01-line02",
+      "text": "안녕하세요. 이번 영상은 이 하늘색의 비밀을, 빛이 흩어지는 원리 하나로 풀어보려고 합니다. 파란 하늘과 붉은 노을을 한꺼번에 말이죠.",
+      "visual": {
+        "component": "TitleCard",
+        "props": {
+          "eyebrow": "빛과 대기",
+          "title": "왜 하늘은 파란가",
+          "subtitle": "그리고 노을은 왜 붉은가"
+        }
+      }
+    },
+    {
+      "id": "scene02-line01",
+      "text": "먼저 짚고 갈 게 하나 있습니다. 우리가 하얗다고 느끼는 햇빛은, 사실 빨강부터 보라까지 모든 색의 빛이 한데 섞인 것입니다.",
+      "visual": {
+        "component": "HeroImage",
+        "props": {
+          "kind": "photo",
+          "overlay": "bottom",
+          "caption": "햇빛은 모든 색이 섞인 흰빛",
+          "fallback_color": "#222222"
+        }
+      },
+      "broll_keywords": ["prism light spectrum", "rainbow light refraction", "sunlight through glass"]
+    },
+    {
+      "id": "scene02-line02",
+      "text": "프리즘에 햇빛을 통과시키면 무지개처럼 색이 쭉 갈라지죠. 그게 바로 그 증거입니다.",
+      "broll_keywords": ["prism rainbow spectrum"]
+    },
+    {
+      "id": "scene02-line03",
+      "text": "그리고 색마다 파장이 다릅니다. 빨강 쪽은 파장이 길고, 파랑과 보라 쪽은 파장이 짧습니다. 이 길이 차이가 오늘 이야기의 핵심입니다.",
+      "visual": {
+        "component": "BulletList",
+        "props": {
+          "heading": "빛의 파장 (Wavelength)",
+          "items": ["빨강 — 긴 파장 (long)", "파랑·보라 — 짧은 파장 (short)"]
+        }
+      }
+    },
+    {
+      "id": "scene03-line01",
+      "text": "이제 본론입니다. 태양빛이 지구의 대기로 들어오면, 공기를 이루는 아주 작은 분자들과 부딪칩니다.",
+      "visual": {
+        "component": "FlowDiagram",
+        "props": {
+          "heading": "빛이 흩어지는 과정",
+          "orientation": "horizontal",
+          "connector": "arrow",
+          "nodes": [
+            { "label": "태양빛 (Sunlight)" },
+            { "label": "공기 분자 (Air molecules)" },
+            { "label": "사방으로 산란 (Scattered)" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "scene03-line02",
+      "text": "이때 빛이 분자에 부딪혀 사방으로 튕겨 나가는 걸, 산란이라고 부릅니다."
+    },
+    {
+      "id": "scene03-line03",
+      "text": "그런데 모든 색이 똑같이 흩어지는 게 아닙니다. 파장이 짧을수록 훨씬 더 많이 흩어집니다. 파란빛은 빨간빛보다 파장이 짧아서, 비교가 안 될 만큼 강하게 흩어지죠.",
+      "visual": {
+        "component": "HighlightedLine",
+        "props": {
+          "text": "파장이 짧을수록 더 많이 흩어진다",
+          "highlights": ["짧을수록", "더 많이"]
+        }
+      }
+    },
+    {
+      "id": "scene03-line04",
+      "text": "영국의 물리학자 레일리가 이 관계를 처음 정리했습니다. 그래서 이런 산란을 레일리 산란이라고 부릅니다.",
+      "visual": {
+        "component": "HighlightedLine",
+        "props": {
+          "eyebrow": "이름 붙이기",
+          "text": "레일리 산란 (Rayleigh scattering)",
+          "highlights": ["레일리 산란"]
+        }
+      }
+    },
+    {
+      "id": "scene04-line01",
+      "text": "그 결과는 이렇습니다. 흩어진 파란빛이 대기 곳곳으로, 하늘 전체에 넓게 퍼집니다.",
+      "visual": {
+        "component": "HeroImage",
+        "props": {
+          "kind": "video",
+          "overlay": "bottom",
+          "caption": "흩어진 파란빛이 하늘을 채운다",
+          "fallback_color": "#1d3f73"
+        }
+      },
+      "broll_keywords": ["clear blue sky", "blue sky clouds wide", "sky panorama"]
+    },
+    {
+      "id": "scene04-line02",
+      "text": "그래서 우리가 하늘의 어느 쪽을 보든, 사방에서 흩어진 파란빛이 눈에 들어옵니다. 하늘이 파랗게 보이는 이유가 이것입니다.",
+      "visual": {
+        "component": "HighlightedLine",
+        "props": {
+          "text": "그래서 하늘은 파랗게 보입니다",
+          "highlights": ["파랗게"]
+        }
+      }
+    },
+    {
+      "id": "scene04-line03",
+      "text": "그럼 보라빛은 어떻게 됐을까요. 보라빛은 파장이 더 짧아 사실 더 많이 흩어집니다. 다만 햇빛에 보라빛 자체가 적고, 우리 눈이 보라색에 덜 민감해서, 결국 파란색이 하늘을 채운 것으로 보입니다.",
+      "visual": {
+        "component": "BulletList",
+        "props": {
+          "heading": "그럼 보라색이 아닌 이유는",
+          "items": ["햇빛에 보라빛 자체가 적다", "사람 눈이 보라색에 덜 민감하다"]
+        }
+      }
+    },
+    {
+      "id": "scene05-line01",
+      "text": "이제 노을 차례입니다. 낮에 해가 머리 위에 있을 때는, 빛이 대기를 비교적 짧게 가로질러 우리 눈에 옵니다.",
+      "visual": {
+        "component": "FlowDiagram",
+        "props": {
+          "eyebrow": "빛이 지나는 길",
+          "heading": "정오 vs 해질녘",
+          "orientation": "vertical",
+          "connector": "arrow",
+          "nodes": [
+            { "label": "정오 — 짧은 경로 (short path)", "sublabel": "파란빛이 살아남는다" },
+            { "label": "해질녘 — 긴 경로 (long path)", "sublabel": "파란빛이 도중에 흩어진다" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "scene05-line02",
+      "text": "하지만 해가 지평선에 가까워지면, 빛이 우리 눈에 닿기까지 훨씬 더 두꺼운 공기층을 비스듬히 통과해야 합니다.",
+      "visual": {
+        "component": "HeroImage",
+        "props": {
+          "kind": "video",
+          "overlay": "bottom",
+          "caption": "긴 경로를 지나는 노을빛",
+          "fallback_color": "#7a3b1d"
+        }
+      },
+      "broll_keywords": ["sunset horizon", "red sunset sky", "dusk golden hour"]
+    },
+    {
+      "id": "scene05-line03",
+      "text": "그 긴 길을 지나는 동안, 파란빛은 도중에 거의 다 흩어져 옆으로 새 버립니다. 끝까지 살아남아 우리 눈에 도달하는 건, 잘 흩어지지 않는 빨강과 주황이죠.",
+      "visual": {
+        "component": "HighlightedLine",
+        "props": {
+          "text": "파란빛은 새어 나가고, 붉은빛만 남는다",
+          "highlights": ["붉은빛만 남는다"]
+        }
+      }
+    },
+    {
+      "id": "scene05-line04",
+      "text": "그래서 노을이 붉습니다. 파란 하늘과 붉은 노을은 정반대처럼 보이지만, 사실은 똑같은 레일리 산란의 양면이었던 겁니다.",
+      "visual": {
+        "component": "HighlightedLine",
+        "props": {
+          "eyebrow": "반전",
+          "text": "파란 하늘과 붉은 노을은 같은 원리의 양면",
+          "highlights": ["같은 원리의 양면"]
+        }
+      }
+    },
+    {
+      "id": "scene06-line01",
+      "text": "정리하면 이렇습니다. 햇빛은 모든 색이 섞인 흰빛이고, 파장이 짧은 파란빛이 공기에 가장 많이 흩어집니다. 낮에는 그 파란빛이 하늘을 채우고, 해 질 녘에는 빛이 긴 길을 지나며 파란빛을 잃어 붉은색만 남습니다.",
+      "visual": {
+        "component": "BulletList",
+        "props": {
+          "heading": "오늘의 정리",
+          "items": [
+            "햇빛 = 모든 색이 섞인 흰빛",
+            "짧은 파장(파랑)이 가장 많이 흩어진다 — 레일리 산란",
+            "낮은 파랗게, 노을은 붉게 — 같은 원리의 양면"
+          ]
+        }
+      }
+    },
+    {
+      "id": "scene06-line02",
+      "text": "다음에 하늘을 보실 때, 그 색이 빛이 흩어진 결과라는 걸 한번 떠올려 보면 좋겠습니다. 여기서 마무리하도록 하겠습니다.",
+      "visual": {
+        "component": "TitleCard",
+        "props": {
+          "eyebrow": "마무리",
+          "title": "하늘색은 흩어진 빛이다",
+          "subtitle": "레일리 산란"
+        }
+      }
+    }
+  ]
+}

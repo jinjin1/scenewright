@@ -1,0 +1,312 @@
+{
+  "meta": {
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "transition": "varied",
+    "bgm_id": null,
+    "bgm_volume": 0.15
+  },
+  "shots": [
+    {
+      "component": "HeroImage",
+      "props": {
+        "caption": "같은 태양빛, 다른 하늘색",
+        "kind": "video",
+        "overlay": "bottom",
+        "fallback_color": "#1c2b4a"
+      },
+      "scene_id": "scene01",
+      "audio_ref": "assets/audio/scene01-line01.wav",
+      "duration_sec": 8.3,
+      "broll_keywords": [
+        "blue sky daytime",
+        "sunset sky orange",
+        "golden hour sky"
+      ],
+      "transition_in": "fade"
+    },
+    {
+      "component": "TitleCard",
+      "props": {
+        "title": "왜 하늘은 파란가",
+        "subtitle": "그리고 노을은 왜 붉은가",
+        "eyebrow": "빛과 대기"
+      },
+      "scene_id": "scene01",
+      "audio_ref": "assets/audio/scene01-line02.wav",
+      "duration_sec": 8.3,
+      "broll_keywords": []
+    },
+    {
+      "component": "HeroImage",
+      "props": {
+        "caption": "햇빛은 모든 색이 섞인 흰빛",
+        "kind": "photo",
+        "overlay": "bottom",
+        "fallback_color": "#222222"
+      },
+      "scene_id": "scene02",
+      "audio_ref": "assets/audio/scene02-line01.wav",
+      "duration_sec": 7.8,
+      "broll_keywords": [
+        "prism light spectrum",
+        "rainbow light refraction",
+        "sunlight through glass"
+      ],
+      "transition_in": "fade"
+    },
+    {
+      "component": "HeroImage",
+      "props": {
+        "caption": "햇빛은 모든 색이 섞인 흰빛",
+        "kind": "photo",
+        "overlay": "bottom",
+        "fallback_color": "#222222"
+      },
+      "scene_id": "scene02",
+      "audio_ref": "assets/audio/scene02-line02.wav",
+      "duration_sec": 5.1,
+      "broll_keywords": [
+        "prism light spectrum",
+        "rainbow light refraction",
+        "sunlight through glass"
+      ]
+    },
+    {
+      "component": "BulletList",
+      "props": {
+        "heading": "빛의 파장 (Wavelength)",
+        "items": [
+          "빨강 — 긴 파장 (long)",
+          "파랑·보라 — 짧은 파장 (short)"
+        ]
+      },
+      "scene_id": "scene02",
+      "audio_ref": "assets/audio/scene02-line03.wav",
+      "duration_sec": 8.3,
+      "broll_keywords": []
+    },
+    {
+      "component": "FlowDiagram",
+      "props": {
+        "heading": "빛이 흩어지는 과정",
+        "orientation": "horizontal",
+        "nodes": [
+          {
+            "label": "태양빛 (Sunlight)"
+          },
+          {
+            "label": "공기 분자 (Air molecules)"
+          },
+          {
+            "label": "사방으로 산란 (Scattered)"
+          }
+        ],
+        "connector": "arrow"
+      },
+      "scene_id": "scene03",
+      "audio_ref": "assets/audio/scene03-line01.wav",
+      "duration_sec": 6,
+      "broll_keywords": [],
+      "transition_in": "fade"
+    },
+    {
+      "component": "FlowDiagram",
+      "props": {
+        "heading": "빛이 흩어지는 과정",
+        "orientation": "horizontal",
+        "nodes": [
+          {
+            "label": "태양빛 (Sunlight)"
+          },
+          {
+            "label": "공기 분자 (Air molecules)"
+          },
+          {
+            "label": "사방으로 산란 (Scattered)"
+          }
+        ],
+        "connector": "arrow"
+      },
+      "scene_id": "scene03",
+      "audio_ref": "assets/audio/scene03-line02.wav",
+      "duration_sec": 4.4,
+      "broll_keywords": []
+    },
+    {
+      "component": "HighlightedLine",
+      "props": {
+        "text": "파장이 짧을수록 더 많이 흩어진다",
+        "highlights": [
+          "짧을수록",
+          "더 많이"
+        ],
+        "variant": "marker"
+      },
+      "scene_id": "scene03",
+      "audio_ref": "assets/audio/scene03-line03.wav",
+      "duration_sec": 10.1,
+      "broll_keywords": []
+    },
+    {
+      "component": "HighlightedLine",
+      "props": {
+        "text": "레일리 산란 (Rayleigh scattering)",
+        "highlights": [
+          "레일리 산란"
+        ],
+        "eyebrow": "이름 붙이기",
+        "variant": "marker"
+      },
+      "scene_id": "scene03",
+      "audio_ref": "assets/audio/scene03-line04.wav",
+      "duration_sec": 6.3,
+      "broll_keywords": []
+    },
+    {
+      "component": "HeroImage",
+      "props": {
+        "caption": "흩어진 파란빛이 하늘을 채운다",
+        "kind": "video",
+        "overlay": "bottom",
+        "fallback_color": "#1d3f73"
+      },
+      "scene_id": "scene04",
+      "audio_ref": "assets/audio/scene04-line01.wav",
+      "duration_sec": 5.1,
+      "broll_keywords": [
+        "clear blue sky",
+        "blue sky clouds wide",
+        "sky panorama"
+      ],
+      "transition_in": "fade"
+    },
+    {
+      "component": "HighlightedLine",
+      "props": {
+        "text": "그래서 하늘은 파랗게 보입니다",
+        "highlights": [
+          "파랗게"
+        ],
+        "variant": "marker"
+      },
+      "scene_id": "scene04",
+      "audio_ref": "assets/audio/scene04-line02.wav",
+      "duration_sec": 7.6,
+      "broll_keywords": []
+    },
+    {
+      "component": "BulletList",
+      "props": {
+        "heading": "그럼 보라색이 아닌 이유는",
+        "items": [
+          "햇빛에 보라빛 자체가 적다",
+          "사람 눈이 보라색에 덜 민감하다"
+        ]
+      },
+      "scene_id": "scene04",
+      "audio_ref": "assets/audio/scene04-line03.wav",
+      "duration_sec": 12.1,
+      "broll_keywords": []
+    },
+    {
+      "component": "FlowDiagram",
+      "props": {
+        "eyebrow": "빛이 지나는 길",
+        "heading": "정오 vs 해질녘",
+        "orientation": "vertical",
+        "nodes": [
+          {
+            "label": "정오 — 짧은 경로 (short path)",
+            "sublabel": "파란빛이 살아남는다"
+          },
+          {
+            "label": "해질녘 — 긴 경로 (long path)",
+            "sublabel": "파란빛이 도중에 흩어진다"
+          }
+        ],
+        "connector": "arrow"
+      },
+      "scene_id": "scene05",
+      "audio_ref": "assets/audio/scene05-line01.wav",
+      "duration_sec": 6.8,
+      "broll_keywords": [],
+      "transition_in": "flip"
+    },
+    {
+      "component": "HeroImage",
+      "props": {
+        "caption": "긴 경로를 지나는 노을빛",
+        "kind": "video",
+        "overlay": "bottom",
+        "fallback_color": "#7a3b1d"
+      },
+      "scene_id": "scene05",
+      "audio_ref": "assets/audio/scene05-line02.wav",
+      "duration_sec": 6.8,
+      "broll_keywords": [
+        "sunset horizon",
+        "red sunset sky",
+        "dusk golden hour"
+      ]
+    },
+    {
+      "component": "HighlightedLine",
+      "props": {
+        "text": "파란빛은 새어 나가고, 붉은빛만 남는다",
+        "highlights": [
+          "붉은빛만 남는다"
+        ],
+        "variant": "marker"
+      },
+      "scene_id": "scene05",
+      "audio_ref": "assets/audio/scene05-line03.wav",
+      "duration_sec": 9.7,
+      "broll_keywords": []
+    },
+    {
+      "component": "HighlightedLine",
+      "props": {
+        "text": "파란 하늘과 붉은 노을은 같은 원리의 양면",
+        "highlights": [
+          "같은 원리의 양면"
+        ],
+        "eyebrow": "반전",
+        "variant": "marker"
+      },
+      "scene_id": "scene05",
+      "audio_ref": "assets/audio/scene05-line04.wav",
+      "duration_sec": 7.3,
+      "broll_keywords": []
+    },
+    {
+      "component": "BulletList",
+      "props": {
+        "heading": "오늘의 정리",
+        "items": [
+          "햇빛 = 모든 색이 섞인 흰빛",
+          "짧은 파장(파랑)이 가장 많이 흩어진다 — 레일리 산란",
+          "낮은 파랗게, 노을은 붉게 — 같은 원리의 양면"
+        ]
+      },
+      "scene_id": "scene06",
+      "audio_ref": "assets/audio/scene06-line01.wav",
+      "duration_sec": 13.1,
+      "broll_keywords": [],
+      "transition_in": "iris"
+    },
+    {
+      "component": "TitleCard",
+      "props": {
+        "title": "하늘색은 흩어진 빛이다",
+        "subtitle": "레일리 산란",
+        "eyebrow": "마무리"
+      },
+      "scene_id": "scene06",
+      "audio_ref": "assets/audio/scene06-line02.wav",
+      "duration_sec": 7.4,
+      "broll_keywords": []
+    }
+  ]
+}
