@@ -20,7 +20,7 @@ import { useEntrance } from "./_anim.js";
 // StatHero(클린 거대 숫자 + CountUp)가 정답. lint `starburst-numeric-headline`이 숫자만 들어간
 // headline을 경고. 즉 ReactionBeat과 같은 "감정 1순간" 슬롯이지 StatHero 대체재가 아니다.
 //
-// 세련 세팅(`dual` 컨셉, 육안 튜닝 — _experiments/StarburstRefine 비교에서 채택): **이중 레이어**로
+// 세련 세팅(`dual` 컨셉, 육안 튜닝으로 채택): **이중 레이어**로
 // 깊이를 준다. (1) 가는 크림 빛줄기 72개(god-ray 결) + (2) 성긴 뮤트-앰버 광선 14개를 역회전·낮은
 // 불투명도로 겹쳐 미세한 입체감. 직설적 레트로 선버스트(채도 높은 단색·하드 엣지·팝)를 피하고,
 // 높은 smoothness(부드러운 빛줄기, CSS blur는 렌더비용이라 안 씀)·낮은 vignette(가장자리 검정

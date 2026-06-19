@@ -3,12 +3,12 @@ import {
   AbsoluteFill,
   interpolate,
   OffthreadVideo,
-  staticFile,
   useCurrentFrame,
 } from "remotion";
 import type { HeroImageProps } from "../../schemas/script.js";
 import { colors, motion, typography } from "../theme/index.js";
 import { AmbientBg } from "./_AmbientBg.js";
+import { resolveMediaSrc } from "./_media.js";
 import { KenBurnsImage } from "./_KenBurnsImage.js";
 
 // `src`/`durationInFrames`는 props 스키마에 없는 런타임 필드 — Episode가 stock 매니페스트와
@@ -21,11 +21,6 @@ const CAPTION_SAFE = 280;
 const CONTENT_WIDTH = 1920 - PAD * 2;
 const TITLE_MAX = typography.size.display; // 144
 const CAPTION_MAX = typography.size.subhead; // 48
-
-function resolveMediaSrc(src: string): string {
-  if (/^https?:\/\//.test(src)) return src;
-  return staticFile(src);
-}
 
 // 풀블리드 Ken Burns 이미지(또는 비디오) + 하단 좌측 제목/캡션 오버레이.
 // 미디어를 배경이 아니라 *본문*으로 세우는 image-first 씬.

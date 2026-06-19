@@ -1,5 +1,6 @@
-import { AbsoluteFill, Img, staticFile } from "remotion";
+import { AbsoluteFill, Img } from "remotion";
 import { z } from "zod";
+import { resolveMediaSrc } from "./scenes/_media.js";
 
 // "Transformed Thumbnail.html" (Claude Design 핸드오프)의 픽셀 재현.
 // Episode 파이프라인과 무관한 독립 커버 썸네일.
@@ -50,10 +51,6 @@ export type TransformedThumbnailProps = z.infer<
   typeof TransformedThumbnailPropsSchema
 >;
 
-function resolveSrc(src: string): string {
-  return /^https?:\/\//.test(src) ? src : staticFile(src);
-}
-
 export function TransformedThumbnail({
   imageSrc,
   eyebrowLabel,
@@ -73,7 +70,7 @@ export function TransformedThumbnail({
       {/* ---------- photo, full bleed ---------- */}
       <AbsoluteFill style={{ zIndex: 1 }}>
         <Img
-          src={resolveSrc(imageSrc)}
+          src={resolveMediaSrc(imageSrc)}
           style={{
             width: "100%",
             height: "100%",
