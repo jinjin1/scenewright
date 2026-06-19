@@ -11,21 +11,21 @@
 
 import path from "node:path";
 import { isBlankish } from "./rank.js";
-import type { MediaResult, Provider } from "./types.js";
+import type { ManifestEntry } from "./manifest.js";
 import { escapeHtml as esc, SHEET_BASE_STYLE, sheetShell } from "../html.js";
 
-// cli/stock.ts의 ManifestEntry/Manifest와 구조적으로 호환되는 최소 입력 타입
-// (순환 import를 피하려고 여기서 좁게 재선언).
-export interface SheetEntry {
-  shot_index: number;
-  shot_id: string;
-  scene_id: string;
-  media_type: "photo" | "video" | "color";
-  keywords: string[];
-  provider: Provider | "library" | null;
-  local_paths: string[];
-  attributions: MediaResult[];
-}
+// contact-sheet가 읽는 manifest entry 필드(권위 타입 ManifestEntry의 부분집합).
+export type SheetEntry = Pick<
+  ManifestEntry,
+  | "shot_index"
+  | "shot_id"
+  | "scene_id"
+  | "media_type"
+  | "keywords"
+  | "provider"
+  | "local_paths"
+  | "attributions"
+>;
 
 export interface SheetManifest {
   generated_at: string;

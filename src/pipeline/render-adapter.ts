@@ -7,18 +7,15 @@
 
 import type { Script } from "../schemas/script.js";
 import type { Storyboard } from "../schemas/storyboard.js";
+import type { ManifestEntry } from "./stock/manifest.js";
 import { captionByShot } from "./captions.js";
 
-/** stock manifest entry 중 어댑터가 읽는 최소 형태(전체 스키마는 cli/stock.ts). */
-export interface RenderManifestEntry {
-  // stock.ts가 storyboard 순서대로 기록한 권위 있는 shot 인덱스. 있으면 우선 사용.
+// 어댑터가 읽는 manifest entry 필드(권위 타입 ManifestEntry의 부분집합).
+// shot_index는 옛 manifest엔 없을 수 있어 optional, provider는 옛 임의 문자열도 받게 넓게.
+export type RenderManifestEntry = Pick<ManifestEntry, "audio_ref" | "local_paths"> & {
   shot_index?: number;
-  audio_ref: string;
-  // stock provider | "library" | null(매치 0건 → 폴백). null이면 자산 없음.
   provider: string | null;
-  // episode 루트 기준 상대 경로들("episodes/<slug>/assets/stock/...").
-  local_paths: string[];
-}
+};
 
 export interface RenderManifest {
   entries: RenderManifestEntry[];

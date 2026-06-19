@@ -20,6 +20,7 @@ import { cacheDir, copyIntoCache, download, resolveLibraryRef } from "../stock/c
 import { renderLibraryHtml, renderLibraryMarkdown } from "../stock/catalog.js";
 import { collectAssets, type ReuseFn } from "../stock/collect.js";
 import { renderContactSheet } from "../stock/contact-sheet.js";
+import type { Manifest, ManifestEntry } from "../stock/manifest.js";
 import {
   REUSE_FRACTION_CAP,
   catalogHtmlPath,
@@ -42,36 +43,6 @@ function libraryMediaType(p: string): "photo" | "video" {
 const SECONDS_PER_CLIP = 5;
 // shot 하나가 끌어올 수 있는 자산 상한. 너무 잘게 컷하면 산만해진다.
 const MAX_CLIPS_PER_SHOT = 4;
-
-interface ManifestEntry {
-  shot_index: number;
-  shot_id: string;
-  scene_id: string;
-  audio_ref: string;
-  media_type: "photo" | "video" | "color";
-  // 첫 매치 키워드 (back-compat). 전체는 keywords[].
-  keyword: string | null;
-  keywords: string[];
-  // 첫 자산의 provider (back-compat; null이면 매치 0건 → 폴백).
-  // "library" = 운영자 큐레이션 라이브러리 자산(attribution 불필요).
-  provider: Provider | "library" | null;
-  // 첫 자산 경로 (back-compat). 전체는 local_paths[].
-  local_path: string | null;
-  local_paths: string[];
-  // 첫 자산 attribution (back-compat). 전체는 attributions[].
-  attribution: MediaResult | null;
-  attributions: MediaResult[];
-  // 증분 fetch용 검색 입력 스냅샷 — 다음 run이 안 바뀐 shot을 재검색 없이 재사용할 수 있게.
-  // (옛 manifest엔 없음 → undefined → 입력 비교 미스 → 재검색. 안전한 마이그레이션.)
-  input_keywords: string[];
-  input_image_ref: string | null;
-}
-
-interface Manifest {
-  generated_at: string;
-  entries: ManifestEntry[];
-  attribution_block: string;
-}
 
 // shot duration → 끌어올 자산 수.
 function clipCountFor(durationSec: number): number {
