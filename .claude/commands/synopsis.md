@@ -9,7 +9,7 @@ argument-hint: <slug>
 
 ## 인자
 
-`$ARGUMENTS` = `slug` (필수). `/^[a-z0-9-]+$/` — `/new-episode`와 동일 규칙.
+`$ARGUMENTS` = `slug` (필수). `/^[a-z0-9][a-z0-9-]{0,63}$/` — `/new-episode`와 동일 규칙.
 
 ## 입력
 
@@ -34,7 +34,7 @@ argument-hint: <slug>
 
 ## 동작
 
-1. `$ARGUMENTS`를 `slug`로 받고 `/^[a-z0-9-]+$/` 검증. 위반 시 중단.
+1. `$ARGUMENTS`를 `slug`로 받고 `/^[a-z0-9][a-z0-9-]{0,63}$/` 검증. 위반 시 중단.
 2. `episodes/<slug>/source.txt` Read. 파일이 없거나 비어 있으면 `/new-episode <slug>`로 안내하고 중단.
 3. `VOICE.md` Read (전체) + `REFERENCE/*.md` 디렉터리 목록 확인 (선택적으로 관련 카드 Read).
 4. **아래 system + user prompt**를 자체 추론으로 실행해 결과 JSON 생성.

@@ -15,7 +15,7 @@ argument-hint: <slug>
 
 ## 동작
 
-1. `$ARGUMENTS`로 받은 `slug` 검증 — `assertValidSlug`와 동일한 `/^[a-z0-9-]+$/`
+1. `$ARGUMENTS`로 받은 `slug` 검증 — `assertValidSlug` (`/^[a-z0-9][a-z0-9-]{0,63}$/`)
 2. `episodes/<slug>/script.json` 존재 확인 — 없으면 `/script` 먼저 안내
 3. `npm run tts -- <slug>` 실행
    - 내부: `src/pipeline/cli/tts.ts`가 `transliterate`를 모든 line.text에 적용 후

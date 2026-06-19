@@ -90,12 +90,10 @@ for (const entry of manifest.entries) {
 Captions 컴포넌트는 shot index 기준으로 자막을 표시한다 (`storyboard.shots[i]` ↔ `captions[i]`). 스크립트 라인 텍스트를 `toCaption()`(콤마/생략부호 제거)으로 정제해서 매핑한다 (`render-adapter.ts`의 `buildCaptionsByShot`):
 
 ```ts
-import { toCaption } from "./captions.js";
-const lineById = new Map(script.lines.map((l) => [l.id, l]));
-const captions: string[] = storyboard.shots.map((shot) => {
-  const id = shot.audio_ref.replace(/^assets\/audio\//, "").replace(/\.wav$/, "");
-  return toCaption(lineById.get(id)?.text ?? "");
-});
+import { captionByShot } from "./captions.js";
+// audio_ref → line id 매핑 + 자막 정제(toCaption)는 captions.ts의 captionByShot이
+// 단일 소스(SRT 경로와 공유). buildCaptionsByShot은 그 위의 얇은 EpisodeProps 어댑터.
+const captions: string[] = captionByShot(storyboard, script);
 ```
 
 ⚠️ `captions` 배열을 빠뜨리면 영상에 자막이 안 나옴 (EpisodeProps에서 `captions: z.array(z.string()).default([])` — 누락 시 빈 배열로 폴백).
