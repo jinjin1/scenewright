@@ -22,6 +22,28 @@ function creditLine(media: MediaResult): string {
 }
 
 /**
+ * Group credits by provider, deduplicating by `keyFn(media)` and preserving
+ * first-seen order within each provider bucket. Both attribution formatters
+ * share this; they differ only in the dedup key (asset id vs. photographer).
+ */
+function groupByProvider(
+  used: MediaResult[],
+  keyFn: (m: MediaResult) => string,
+): Map<Provider, MediaResult[]> {
+  const seen = new Set<string>();
+  const grouped = new Map<Provider, MediaResult[]>();
+  for (const media of used) {
+    const key = keyFn(media);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const bucket = grouped.get(media.provider) ?? [];
+    bucket.push(media);
+    grouped.set(media.provider, bucket);
+  }
+  return grouped;
+}
+
+/**
  * Build the attribution block for a video description.
  *
  * - Groups credits by provider; preserves first-seen order within each group.
@@ -35,18 +57,7 @@ function creditLine(media: MediaResult): string {
 export function formatAttribution(used: MediaResult[]): string {
   if (used.length === 0) return "";
 
-  const seen = new Set<string>();
-  const grouped = new Map<Provider, MediaResult[]>();
-
-  for (const media of used) {
-    const dedupKey = `${media.provider}:${media.id}`;
-    if (seen.has(dedupKey)) continue;
-    seen.add(dedupKey);
-
-    const bucket = grouped.get(media.provider) ?? [];
-    bucket.push(media);
-    grouped.set(media.provider, bucket);
-  }
+  const grouped = groupByProvider(used, (m) => `${m.provider}:${m.id}`);
 
   const sections: string[] = [];
   for (const provider of PROVIDER_ORDER) {
@@ -79,16 +90,7 @@ export function formatAttribution(used: MediaResult[]): string {
 export function formatAttributionCompact(used: MediaResult[]): string {
   if (used.length === 0) return "";
 
-  const seen = new Set<string>();
-  const grouped = new Map<Provider, MediaResult[]>();
-  for (const media of used) {
-    const key = `${media.provider}:${media.photographer}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    const bucket = grouped.get(media.provider) ?? [];
-    bucket.push(media);
-    grouped.set(media.provider, bucket);
-  }
+  const grouped = groupByProvider(used, (m) => `${m.provider}:${m.photographer}`);
 
   const providers = PROVIDER_ORDER.filter((p) => grouped.has(p));
   const lines = [`📷 Stock media: ${providers.map((p) => PROVIDER_LABEL[p]).join(" · ")}`];

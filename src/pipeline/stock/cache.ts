@@ -2,11 +2,9 @@ import { createHash } from "node:crypto";
 import { existsSync, realpathSync } from "node:fs";
 import { copyFile, mkdir, readdir, rename, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { assertValidSlug } from "../slug.js";
 import { MAX_STOCK_WIDTH } from "./select.js";
 import type { MediaResult } from "./types.js";
-
-// Slug is supplied from CLI argv. Restrict to a safe shape to avoid path traversal.
-const SLUG_RE = /^[a-z0-9][a-z0-9-]{0,63}$/;
 
 const EXT_BY_MIME: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -19,16 +17,8 @@ const EXT_BY_MIME: Record<string, string> = {
   "video/quicktime": "mov",
 };
 
-function assertSlug(slug: string): void {
-  if (!SLUG_RE.test(slug)) {
-    throw new Error(
-      `invalid episode slug: ${JSON.stringify(slug)} (must match ${SLUG_RE.source})`,
-    );
-  }
-}
-
 export function cacheDir(slug: string): string {
-  assertSlug(slug);
+  assertValidSlug(slug);
   return path.resolve("episodes", slug, "assets", "stock");
 }
 

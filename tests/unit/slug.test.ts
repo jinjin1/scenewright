@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assertValidSlug, SLUG_PATTERN } from "../../src/pipeline/cli/slug.js";
+import { assertValidSlug, SLUG_PATTERN } from "../../src/pipeline/slug.js";
 
 describe("assertValidSlug", () => {
   it("accepts lowercase-alphanumeric-hyphen slugs", () => {

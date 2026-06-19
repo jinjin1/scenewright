@@ -22,6 +22,7 @@ import {
   SweepDividerPropsSchema,
   TerminalCardPropsSchema,
   TitleCardPropsSchema,
+  safeImageRef,
 } from "./script.js";
 
 export const StoryboardMetaSchema = z.object({
@@ -58,10 +59,7 @@ const shotBase = {
   // StockBg가 필요한 shot에서 stock 카스케이드에 쓰일 키워드 (script 단계에서 carry-forward).
   broll_keywords: z.array(z.string().min(1)).default([]),
   // 큐레이션 라이브러리 자산 파일명 (script 단계에서 carry-forward). stock보다 우선.
-  image_ref: z
-    .string()
-    .regex(/^(?!.*\.\.)[a-zA-Z0-9][a-zA-Z0-9._/-]*\.[a-zA-Z0-9]+$/)
-    .optional(),
+  image_ref: safeImageRef.optional(),
   // 이 shot이 새 비주얼 그룹을 "여는" 경계에서 쓸 전환 (직전 그룹 → 이 그룹).
   // meta.transition="varied"일 때만 적용. CC가 /storyboard에서 내용 보고 고른다.
   // 생략 시 폴백: scene 바뀌면 fade, 같은 scene이면 하드 컷.

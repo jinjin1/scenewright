@@ -14,7 +14,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import { StoryboardSchema, type StoryboardShot } from "../../schemas/storyboard.js";
-import { assertValidSlug } from "./slug.js";
+import { assertValidSlug } from "../slug.js";
 import { formatAttribution } from "../stock/attribution.js";
 import { cacheDir, copyIntoCache, download, resolveLibraryRef } from "../stock/cache.js";
 import { renderLibraryHtml, renderLibraryMarkdown } from "../stock/catalog.js";

@@ -61,8 +61,14 @@ const SHORT_LINE_MAX = 20;
 // 위험한 종결: 명사 뒤 copula "입니다/이다"와 짧은 구어 어미. 길고 견고한 동사 어미
 // ("~살펴보겠습니다" 등 "겠습니다"류)는 끝 음절이 빠져도 알아들을 수 있어 제외한다
 // — "습니다"를 통째로 잡지 않고 copula "입니다"만 잡는 게 핵심(오탐 방지).
-const RISKY_ENDING =
-  /(입니다|이다|어요|에요|예요|아요|해요|세요|죠|네요|까요)[.?!…"'”’」』)\]]*\s*$/;
+// 문장 종결 구두점(마침표·물음표·느낌표·말줄임표 + 닫는 따옴표/괄호류).
+// 종결 판정 정규식 3종(RISKY_ENDING·SENTENCE_END_OK·tailLatin)이 공유하는 단일 소스 —
+// 정규식 문자 클래스 내부에 그대로 들어가므로 닫는 `]`만 escape한다.
+const SENT_END_CLASS = `[.?!…"'”’」』)\\]]`;
+
+const RISKY_ENDING = new RegExp(
+  `(입니다|이다|어요|에요|예요|아요|해요|세요|죠|네요|까요)${SENT_END_CLASS}*\\s*$`,
+);
 
 // Latin 토큰(슬래시 포함, 길이 2+). "A/B", "UX/UI", "Notion" 등.
 const LATIN_TOKEN_RE = /[A-Za-z][A-Za-z/]*[A-Za-z]/g;
@@ -81,7 +87,9 @@ const TRANSLATIONESE: { re: RegExp; label: string }[] = [
 ];
 
 // 한국어 종결로 끝나는가(문장부호 또는 종결어미). 아니면 TTS 잘림/어색 위험.
-const SENTENCE_END_OK = /(다|요|죠|까|네|군|함|음|죠|걸|데)\s*$|[.?!…"'”’」』)\]]\s*$/;
+const SENTENCE_END_OK = new RegExp(
+  `(다|요|죠|까|네|군|함|음|걸|데)\\s*$|${SENT_END_CLASS}\\s*$`,
+);
 
 // AI-영상 b-roll 클리셰 — 스톡에서 누구나 쓰는 식상한 장면(악수·팀워크 포즈·발광 전구
 // 등). /script "구체화 사다리"가 예방하지만, 새어든 클리셰 키워드를 결정적으로 검출한다.
@@ -366,7 +374,9 @@ function checkSentenceEnd(line: ScriptLine, idx: number, out: Finding[]): void {
     });
   }
   // 마지막 토큰이 Latin이면(예: "...это RICE") TTS가 끝을 잘릴 위험이 가장 크다.
-  const tailLatin = text.match(/[A-Za-z][A-Za-z/]*\s*[.?!…"」』’)\]]*$/);
+  const tailLatin = text.match(
+    new RegExp(`[A-Za-z][A-Za-z/]*\\s*${SENT_END_CLASS}*$`),
+  );
   if (tailLatin) {
     out.push({
       lineId: line.id,
@@ -630,7 +640,7 @@ export function summarize(findings: Finding[]): LintSummary {
 // 과소-다양성을 권고(warn) 수준으로 경고한다 — 하드 게이트가 아니다(부적합 컴포넌트를
 // 다양성 채우려 억지로 끼워넣는 역효과 회피). 운영자가 리포트를 보고 판단.
 
-const IMAGE_FIRST_COMPONENTS = new Set<VisualSpec["component"]>([
+export const IMAGE_FIRST_COMPONENTS = new Set<VisualSpec["component"]>([
   "HeroImage",
   "SplitVisual",
   "ScreenshotCallout",
@@ -641,7 +651,7 @@ const DIVERSITY_MIN_LINES = 16;
 // 10~15분 영상이 쓸 수 있는 distinct 컴포넌트 바닥(짧은 영상은 길이에 비례해 완화).
 const DISTINCT_FLOOR = 8;
 // 단일 컴포넌트가 차지해도 되는 최대 shot 점유율(초과 시 "독식").
-const DOMINANT_SHARE_MAX = 0.25;
+export const DOMINANT_SHARE_MAX = 0.25;
 // 같은 컴포넌트의 *서로 다른 인스턴스*가 연속 노출돼도 되는 최대 개수.
 // carry-forward(한 비주얼을 여러 라인 hold)는 인스턴스 1개라 여기 안 걸린다 —
 // 그건 carry-forward 30초 규칙의 영역. 여기선 "다른 다이어그램 5개 연속" 같은 단조 클러스터만.
