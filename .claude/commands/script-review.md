@@ -17,7 +17,7 @@ argument-hint: <slug>
 
 ## 동작
 
-1. `slug` 검증(`/^[a-z0-9-]+$/`). `episodes/<slug>/script.json` 존재 확인 — 없으면 `/script` 먼저 안내.
+1. `slug` 검증(`/^[a-z0-9][a-z0-9-]{0,63}$/`). `episodes/<slug>/script.json` 존재 확인 — 없으면 `/script` 먼저 안내.
 2. **결정적 린트 실행**: `npm run lint:script -- <slug>`
    - 콘솔에 `error/warn/check` 요약 + 라인별 findings, `episodes/<slug>/script-review.html` 생성.
    - `source.txt`가 있으면 source-fidelity 검사도 켜진다(소스에 없는 약어/용어).

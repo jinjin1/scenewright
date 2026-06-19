@@ -9,7 +9,7 @@ argument-hint: <slug>
 
 ## 인자
 
-`$ARGUMENTS` = `slug` (필수). `/^[a-z0-9-]+$/`.
+`$ARGUMENTS` = `slug` (필수). `/^[a-z0-9][a-z0-9-]{0,63}$/`.
 
 ## 입력
 

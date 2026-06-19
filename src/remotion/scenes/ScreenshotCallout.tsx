@@ -5,13 +5,13 @@ import {
   interpolate,
   OffthreadVideo,
   spring,
-  staticFile,
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
 import type { ScreenshotCalloutProps } from "../../schemas/script.js";
 import { colors, motion, typography } from "../theme/index.js";
 import { AmbientBg } from "./_AmbientBg.js";
+import { resolveMediaSrc } from "./_media.js";
 
 // `src`/`durationInFrames`는 props 스키마에 없는 런타임 필드 — Episode가 stock/라이브러리
 // 매니페스트와 그룹 길이를 보고 주입한다. src가 없으면 AmbientBg 위 텍스트로 폴백.
@@ -23,11 +23,6 @@ const TITLE_MAX = typography.size.heading; // 72
 const CAPTION_MAX = typography.size.body; // 36
 const BROWSER_BAR = 56;
 const ANN_STEP = 12;
-
-function resolveMediaSrc(src: string): string {
-  if (/^https?:\/\//.test(src)) return src;
-  return staticFile(src);
-}
 
 function isVideoSrc(src: string): boolean {
   return /\.(mp4|webm|mov|m4v)(\?|$)/i.test(src);

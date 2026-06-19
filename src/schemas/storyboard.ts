@@ -1,28 +1,5 @@
 import { z } from "zod";
-import {
-  BulletListPropsSchema,
-  DecisionMatrixPropsSchema,
-  FlowDiagramPropsSchema,
-  GlitchTransitionPropsSchema,
-  ReactionBeatPropsSchema,
-  HeroImagePropsSchema,
-  HighlightedLinePropsSchema,
-  PixelBarChartPropsSchema,
-  PixelDonutPropsSchema,
-  PixelGaugePropsSchema,
-  PixelRoadmapPropsSchema,
-  PixelStepTrackerPropsSchema,
-  PixelTitlePropsSchema,
-  ProgressiveListPropsSchema,
-  ScreenshotCalloutPropsSchema,
-  SplitVisualPropsSchema,
-  StarburstRevealPropsSchema,
-  StatHeroPropsSchema,
-  StockBgPropsSchema,
-  SweepDividerPropsSchema,
-  TerminalCardPropsSchema,
-  TitleCardPropsSchema,
-} from "./script.js";
+import { VisualSpecSchema, safeImageRef } from "./script.js";
 
 export const StoryboardMetaSchema = z.object({
   fps: z.literal(30),
@@ -58,128 +35,23 @@ const shotBase = {
   // StockBg가 필요한 shot에서 stock 카스케이드에 쓰일 키워드 (script 단계에서 carry-forward).
   broll_keywords: z.array(z.string().min(1)).default([]),
   // 큐레이션 라이브러리 자산 파일명 (script 단계에서 carry-forward). stock보다 우선.
-  image_ref: z
-    .string()
-    .regex(/^(?!.*\.\.)[a-zA-Z0-9][a-zA-Z0-9._/-]*\.[a-zA-Z0-9]+$/)
-    .optional(),
+  image_ref: safeImageRef.optional(),
   // 이 shot이 새 비주얼 그룹을 "여는" 경계에서 쓸 전환 (직전 그룹 → 이 그룹).
   // meta.transition="varied"일 때만 적용. CC가 /storyboard에서 내용 보고 고른다.
   // 생략 시 폴백: scene 바뀌면 fade, 같은 scene이면 하드 컷.
   transition_in: TransitionNameSchema.optional(),
 };
 
-export const StoryboardShotSchema = z.discriminatedUnion("component", [
-  z.object({
-    component: z.literal("TitleCard"),
-    props: TitleCardPropsSchema,
-    ...shotBase,
-  }),
-  z.object({
-    component: z.literal("BulletList"),
-    props: BulletListPropsSchema,
-    ...shotBase,
-  }),
-  z.object({
-    component: z.literal("StockBg"),
-    props: StockBgPropsSchema,
-    ...shotBase,
-  }),
-  z.object({
-    component: z.literal("HighlightedLine"),
-    props: HighlightedLinePropsSchema,
-    ...shotBase,
-  }),
-  z.object({
-    component: z.literal("ProgressiveList"),
-    props: ProgressiveListPropsSchema,
-    ...shotBase,
-  }),
-  z.object({
-    component: z.literal("StatHero"),
-    props: StatHeroPropsSchema,
-    ...shotBase,
-  }),
-  z.object({
-    component: z.literal("SweepDivider"),
-    props: SweepDividerPropsSchema,
-    ...shotBase,
-  }),
-  z.object({
-    component: z.literal("TerminalCard"),
-    props: TerminalCardPropsSchema,
-    ...shotBase,
-  }),
-  z.object({
-    component: z.literal("GlitchTransition"),
-    props: GlitchTransitionPropsSchema,
-    ...shotBase,
-  }),
-  z.object({
-    component: z.literal("PixelTitle"),
-    props: PixelTitlePropsSchema,
-    ...shotBase,
-  }),
-  z.object({
-    component: z.literal("HeroImage"),
-    props: HeroImagePropsSchema,
-    ...shotBase,
-  }),
-  z.object({
-    component: z.literal("SplitVisual"),
-    props: SplitVisualPropsSchema,
-    ...shotBase,
-  }),
-  z.object({
-    component: z.literal("ScreenshotCallout"),
-    props: ScreenshotCalloutPropsSchema,
-    ...shotBase,
-  }),
-  z.object({
-    component: z.literal("FlowDiagram"),
-    props: FlowDiagramPropsSchema,
-    ...shotBase,
-  }),
-  z.object({
-    component: z.literal("PixelBarChart"),
-    props: PixelBarChartPropsSchema,
-    ...shotBase,
-  }),
-  z.object({
-    component: z.literal("PixelDonut"),
-    props: PixelDonutPropsSchema,
-    ...shotBase,
-  }),
-  z.object({
-    component: z.literal("PixelGauge"),
-    props: PixelGaugePropsSchema,
-    ...shotBase,
-  }),
-  z.object({
-    component: z.literal("PixelStepTracker"),
-    props: PixelStepTrackerPropsSchema,
-    ...shotBase,
-  }),
-  z.object({
-    component: z.literal("PixelRoadmap"),
-    props: PixelRoadmapPropsSchema,
-    ...shotBase,
-  }),
-  z.object({
-    component: z.literal("DecisionMatrix"),
-    props: DecisionMatrixPropsSchema,
-    ...shotBase,
-  }),
-  z.object({
-    component: z.literal("ReactionBeat"),
-    props: ReactionBeatPropsSchema,
-    ...shotBase,
-  }),
-  z.object({
-    component: z.literal("StarburstReveal"),
-    props: StarburstRevealPropsSchema,
-    ...shotBase,
-  }),
-]);
+// storyboard shot = script의 VisualSpec(component + props) + shotBase(타이밍·전환 필드).
+// 컴포넌트 ↔ props 매핑의 단일 소스는 script.ts의 VisualSpecSchema 하나다 — 여기서
+// 다시 나열하지 않고 각 멤버에 shotBase를 extend해 union을 재구성한다. (script에 컴포넌트를
+// 추가하면 storyboard도 자동으로 따라온다.) .map 결과는 항상 비어있지 않지만 TS는 일반
+// 배열로 보므로 discriminatedUnion이 요구하는 비어있지 않은 튜플로 캐스트한다.
+const shotOptions = VisualSpecSchema.options.map((o) => o.extend(shotBase));
+export const StoryboardShotSchema = z.discriminatedUnion(
+  "component",
+  shotOptions as [(typeof shotOptions)[number], ...(typeof shotOptions)[number][]],
+);
 
 export const StoryboardSchema = z.object({
   meta: StoryboardMetaSchema,

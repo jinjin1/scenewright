@@ -70,6 +70,19 @@ Then, **in a Claude Code session** opened in this repo:
 
 Output: `episodes/my-first-topic/out/final.mp4`.
 
+## Build the sample video instantly with Claude Code
+
+Don't want to type each step? Paste **this single prompt into a Claude Code session** — it clones the repo and builds the bundled sample episode `why-sky-blue` ("why is the sky blue") all the way to `final.mp4`. The sample already ships through the `storyboard` stage, so only the heavy steps (`/tts` → `/render`) have to run.
+
+```
+Clone https://github.com/jinjin1/scenewright.git, then build the final video (final.mp4) of the bundled sample episode "why-sky-blue" all the way through.
+When it's done, tell me the final.mp4 path and the video duration, and open the folder containing that file in the file explorer with the file selected.
+```
+
+> **No stock API key required — b-roll just falls back to solid-color backgrounds.** Without keys, color backgrounds stand in for real footage/photos, but you still get a finished `final.mp4` with **narration, burned-in captions, animations, and transitions** — enough to quickly confirm the pipeline runs and see what the output feels like. To get real b-roll, add free stock keys (Pexels/Unsplash/Pixabay) to `.env` and re-run `/render`.
+>
+> Assumes Claude Code · Node ≥ 18.18 · Python 3.10 + `uv` (see [Prerequisites](#prerequisites)). The first run also does `npm install`, sets up the Python env, downloads the Supertonic model (on first synth, to `~/.cache`), then runs TTS synthesis (~minutes) and the Remotion render.
+
 ## Configure your channel (any topic)
 
 The engine is **domain-neutral**; topic specifics live in three files:

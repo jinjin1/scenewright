@@ -5,21 +5,58 @@
 //   크래시한다(QA 발견). 모든 필드를 optional로 두고 여기서 통일한다. cli/library.ts의
 //   진입점(main)을 임포트하지 않고 테스트할 수 있도록 CLI에서 분리.
 
-import type { MediaResult } from "./types.js";
+import type { MediaResult, Provider } from "./types.js";
 
-// cli/stock.ts ManifestEntry와 구조 호환(읽기 전용 부분집합). 옛/새 스키마를 모두 받기 위해
-// 단수·복수 필드를 전부 optional로 둔다.
-export interface ManifestEntryLite {
+// ── 권위 있는 manifest 형태 (cli/stock.ts가 기록하는 단일 소스) ──────────────
+// stock manifest.json의 한 entry. 작성자(cli/stock.ts)는 항상 복수형 필드(keywords/
+// local_paths/attributions)를 채우고, 단수형(keyword/local_path/attribution)은 옛
+// reader를 위한 back-compat다. 아래 reader 뷰(Lite/Sheet/Render)는 모두 이 타입에서
+// 파생한다 — 필드 타입이 바뀌면 reader가 자동으로 따라오고, 손으로 4벌을 맞출 필요가 없다.
+export interface ManifestEntry {
+  shot_index: number;
   shot_id: string;
+  scene_id: string;
+  audio_ref: string;
   media_type: "photo" | "video" | "color";
-  keyword?: string | null;
-  keywords?: string[];
-  provider: string | null;
-  local_path?: string | null;
-  local_paths?: string[];
-  attribution?: MediaResult | null;
-  attributions?: MediaResult[];
+  // 첫 매치 키워드 (back-compat). 전체는 keywords[].
+  keyword: string | null;
+  keywords: string[];
+  // 첫 자산의 provider (back-compat; null이면 매치 0건 → 폴백).
+  // "library" = 운영자 큐레이션 라이브러리 자산(attribution 불필요).
+  provider: Provider | "library" | null;
+  // 첫 자산 경로 (back-compat). 전체는 local_paths[].
+  local_path: string | null;
+  local_paths: string[];
+  // 첫 자산 attribution (back-compat). 전체는 attributions[].
+  attribution: MediaResult | null;
+  attributions: MediaResult[];
+  // 증분 fetch용 검색 입력 스냅샷 — 다음 run이 안 바뀐 shot을 재검색 없이 재사용할 수 있게.
+  // (옛 manifest엔 없음 → undefined → 입력 비교 미스 → 재검색. 안전한 마이그레이션.)
+  input_keywords: string[];
+  input_image_ref: string | null;
 }
+
+export interface Manifest {
+  generated_at: string;
+  entries: ManifestEntry[];
+  attribution_block: string;
+}
+
+// 읽기-측 부분집합. 옛(단수)·새(복수) 스키마를 모두 받기 위해 단수·복수 필드를 optional로,
+// provider는 옛 임의 문자열도 받도록 넓게(string) 둔다. ManifestEntry에서 파생.
+export type ManifestEntryLite = Pick<ManifestEntry, "shot_id" | "media_type"> & {
+  provider: string | null;
+} & Partial<
+    Pick<
+      ManifestEntry,
+      | "keyword"
+      | "keywords"
+      | "local_path"
+      | "local_paths"
+      | "attribution"
+      | "attributions"
+    >
+  >;
 
 export interface ManifestLite {
   generated_at: string;

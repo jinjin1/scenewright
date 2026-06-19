@@ -3,8 +3,10 @@
 
 import {
   CHARS_PER_SEC,
+  DOMINANT_SHARE_MAX,
   type DiversityReport,
   type Finding,
+  IMAGE_FIRST_COMPONENTS,
   type LintSummary,
   type SceneLengthReport,
 } from "./script-lint.js";
@@ -89,15 +91,17 @@ const STYLE = `
 
 // 컴포넌트 분포 히스토그램 + 다양성 플래그 패널. carry-forward 해소 후 시청자가
 // 실제로 보는 분포를 한눈에 — "단조로운가?"를 라인별 카드가 아니라 전체 모양으로 본다.
-const IMAGE_FIRST = new Set(["HeroImage", "SplitVisual", "ScreenshotCallout"]);
+// IMAGE_FIRST 집합·독식 임계값은 analyzeDiversity와 같은 소스(script-lint)에서 가져온다.
+const isImageFirst = (c: string): boolean =>
+  (IMAGE_FIRST_COMPONENTS as ReadonlySet<string>).has(c);
 
 function renderDiversityPanel(d: DiversityReport): string {
   if (!d.applies) return "";
   const maxCount = d.counts.reduce((m, c) => Math.max(m, c.count), 1);
   const rows = d.counts
     .map((c) => {
-      const over = c.share > 0.25;
-      const cls = IMAGE_FIRST.has(c.component) ? "img" : over ? "over" : "";
+      const over = c.share > DOMINANT_SHARE_MAX;
+      const cls = isImageFirst(c.component) ? "img" : over ? "over" : "";
       const w = Math.max(2, Math.round((c.count / maxCount) * 100));
       return `<div class="divrow">
         <span class="divname">${esc(c.component)}</span>

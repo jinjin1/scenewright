@@ -9,7 +9,7 @@
 
 import { REUSE_OVERUSE_CAP } from "./library.js";
 import type { LibraryEntry, LibraryIndex } from "../../schemas/library.js";
-import { escapeHtml as esc } from "../html.js";
+import { escapeHtml as esc, SHEET_BASE_STYLE, sheetShell } from "../html.js";
 
 function dims(e: LibraryEntry): string {
   const base = `${e.width}×${e.height}`;
@@ -29,6 +29,10 @@ function usageLabel(e: LibraryEntry): string {
 
 const isOveruse = (e: LibraryEntry): boolean => e.used_by.length >= REUSE_OVERUSE_CAP;
 
+// 사용 횟수↓, 동률이면 key 사전순. 마크다운·HTML 카탈로그가 공유하는 정렬.
+const byUsage = (a: LibraryEntry, b: LibraryEntry): number =>
+  b.used_by.length - a.used_by.length || (a.key < b.key ? -1 : 1);
+
 /**
  * 인덱스 → CC가 읽는 압축 마크다운 카탈로그. 자산 1개 = 1줄.
  * 비디오/사진으로 그룹화, 각 그룹은 사용 횟수↓·key 순.
@@ -36,8 +40,6 @@ const isOveruse = (e: LibraryEntry): boolean => e.used_by.length >= REUSE_OVERUS
 export function renderLibraryMarkdown(index: LibraryIndex): string {
   const videos = index.entries.filter((e) => e.media_type === "video");
   const photos = index.entries.filter((e) => e.media_type === "photo");
-  const byUsage = (a: LibraryEntry, b: LibraryEntry): number =>
-    b.used_by.length - a.used_by.length || (a.key < b.key ? -1 : 1);
 
   const line = (e: LibraryEntry): string => {
     const kw = descriptors(e, 6).join(", ") || "(태그 없음)";
@@ -62,30 +64,16 @@ export function renderLibraryMarkdown(index: LibraryIndex): string {
   );
 }
 
-const STYLE = `
-  :root { color-scheme: dark; }
-  body { margin: 0; background: #0c0d10; color: #e7e7ea;
-    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-  header { padding: 20px 24px; border-bottom: 1px solid #23252b; position: sticky; top: 0;
-    background: #0c0d10ee; backdrop-filter: blur(6px); }
-  h1 { margin: 0 0 4px; font-size: 18px; }
-  .summary { color: #9aa0a6; font-size: 13px; }
-  .summary b { color: #e7e7ea; }
-  .grid { display: grid; gap: 14px; padding: 20px 24px;
-    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
-  .card { background: #16181d; border: 1px solid #23252b; border-radius: 10px; overflow: hidden; }
+// SHEET_BASE_STYLE(공유)에 라이브러리 갤러리 고유 규칙만 덧붙인다.
+const STYLE =
+  SHEET_BASE_STYLE +
+  `
   .card.overuse { border-color: #f0b429; }
   img { width: 100%; height: 130px; object-fit: cover; display: block; background: #000; }
-  .meta { padding: 9px 11px; }
   .row { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
   .key { font-weight: 600; font-size: 12px; word-break: break-all; }
   .dim { color: #7c818a; font-size: 12px; white-space: nowrap; }
-  .kw { color: #b9bec6; font-size: 12px; margin-top: 4px; word-break: break-word; }
   .use { color: #7c818a; font-size: 12px; margin-top: 4px; }
-  .badge { display: inline-block; font-size: 11px; padding: 1px 6px; border-radius: 4px;
-    margin-top: 6px; margin-right: 4px; }
-  .b-video { background: #1f3a5f; color: #9cc4ff; }
-  .b-photo { background: #2a2f38; color: #aeb4bd; }
   .b-warn { background: #4f3a1f; color: #f0b429; }
 `;
 
@@ -96,7 +84,7 @@ export function renderLibraryHtml(index: LibraryIndex): string {
   const overused = index.entries.filter(isOveruse).length;
 
   const cards = [...index.entries]
-    .sort((a, b) => b.used_by.length - a.used_by.length || (a.key < b.key ? -1 : 1))
+    .sort(byUsage)
     .map((e) => {
       const over = isOveruse(e);
       const thumb = e.attribution.thumb_url;
@@ -123,20 +111,12 @@ export function renderLibraryHtml(index: LibraryIndex): string {
     `<b>${videos}</b> video · <b>${photos}</b> photo · ` +
     `<b>${overused}</b> overused (≥${REUSE_OVERUSE_CAP}×)</span>`;
 
-  return `<!doctype html>
-<html lang="ko"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>stock 자산 라이브러리</title>
-<style>${STYLE}</style></head>
-<body>
-<header>
-  <h1>스톡 자산 라이브러리 — 재활용 카탈로그</h1>
+  return sheetShell({
+    title: "stock 자산 라이브러리",
+    style: STYLE,
+    headerHtml: `  <h1>스톡 자산 라이브러리 — 재활용 카탈로그</h1>
   ${summary}
-  <div class="summary" style="margin-top:6px">생성 ${esc(index.generated_at)} · 노랑=과사용(새 영상엔 가급적 새 소재). 자동 재활용은 <code>npm run stock</code>이 처리.</div>
-</header>
-<div class="grid">
-${cards.join("\n")}
-</div>
-</body></html>
-`;
+  <div class="summary" style="margin-top:6px">생성 ${esc(index.generated_at)} · 노랑=과사용(새 영상엔 가급적 새 소재). 자동 재활용은 <code>npm run stock</code>이 처리.</div>`,
+    gridBody: cards.join("\n"),
+  });
 }

@@ -10,7 +10,7 @@ export interface SrtCue {
 }
 
 // shot.audio_ref(예: "assets/audio/scene01-line01.wav") → line id ("scene01-line01")
-function lineIdFromAudioRef(audioRef: string): string {
+export function lineIdFromAudioRef(audioRef: string): string {
   return path.basename(audioRef, path.extname(audioRef));
 }
 
@@ -45,25 +45,28 @@ export function toCaption(text: string): string {
     .trim();
 }
 
-// storyboard의 각 shot을 SRT cue로 변환. duration_sec 누적으로 timestamp.
-// 매칭되는 script line의 text를 자막용으로 정제(`toCaption`)하여 사용.
-// line이 없으면 빈 텍스트(누락 cue로 보존).
-export function buildCues(storyboard: Storyboard, script: Script): SrtCue[] {
+// storyboard shot 순서대로 각 shot의 화면 자막 텍스트(정제 후)를 만든다.
+// shot.audio_ref에서 line id를 떼고 매칭 script line의 text를 toCaption()으로 정제한다.
+// 매칭 line이 없으면 빈 문자열(누락 cue/자막 보존). SRT(buildCues)와 번인 자막
+// (render-adapter.buildCaptionsByShot)이 공유하는 단일 소스 — audio_ref 파싱·자막 정제가
+// 두 경로에서 갈리지 않게 한다.
+export function captionByShot(storyboard: Storyboard, script: Script): string[] {
   const lineById = new Map(script.lines.map((l) => [l.id, l]));
+  return storyboard.shots.map((shot) =>
+    toCaption(lineById.get(lineIdFromAudioRef(shot.audio_ref))?.text ?? ""),
+  );
+}
+
+// storyboard의 각 shot을 SRT cue로 변환. duration_sec 누적으로 timestamp.
+export function buildCues(storyboard: Storyboard, script: Script): SrtCue[] {
+  const texts = captionByShot(storyboard, script);
   const cues: SrtCue[] = [];
   let cursor = 0;
   storyboard.shots.forEach((shot, i) => {
     const start = cursor;
     const end = cursor + shot.duration_sec;
     cursor = end;
-    const id = lineIdFromAudioRef(shot.audio_ref);
-    const rawText = lineById.get(id)?.text ?? "";
-    cues.push({
-      index: i + 1,
-      startSec: start,
-      endSec: end,
-      text: toCaption(rawText),
-    });
+    cues.push({ index: i + 1, startSec: start, endSec: end, text: texts[i]! });
   });
   return cues;
 }

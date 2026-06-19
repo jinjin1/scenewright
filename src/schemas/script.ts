@@ -52,6 +52,15 @@ const hexColor = z
   .string()
   .regex(/^#[0-9a-fA-F]{6}$/, "fallback_color must be a 6-digit hex like #1a1a1a");
 
+// 라이브러리 상대 파일명 안전 규칙 — `..` 금지·확장자 필수로 path traversal 차단.
+// script(visual.image_ref)와 storyboard(shotBase.image_ref)가 공유하는 단일 소스.
+export const safeImageRef = z
+  .string()
+  .regex(
+    /^(?!.*\.\.)[a-zA-Z0-9][a-zA-Z0-9._/-]*\.[a-zA-Z0-9]+$/,
+    "image_ref must be a safe library-relative filename (no '..', extension required)",
+  );
+
 // HeroImage — 풀블리드 Ken Burns 이미지 + 제목/캡션 오버레이. 미디어를 *본문*으로 세운다.
 // 자산은 StockBg와 동일하게 broll_keywords로 stock에서 수집(1장). 자산 0건이면 씬이 텍스트로 폴백.
 export const HeroImagePropsSchema = z.object({
@@ -369,13 +378,7 @@ export const ScriptLineSchema = z.object({
   // 큐레이션 라이브러리(`assets/images/library/`) 자산 파일명. 미디어 씬에서 이게
   // 지정되면 stock보다 우선해 그 자산을 쓴다(miss면 stock으로 폴백). `..` 금지·확장자
   // 필수로 path traversal 차단(id 안전 규칙과 동일 정신).
-  image_ref: z
-    .string()
-    .regex(
-      /^(?!.*\.\.)[a-zA-Z0-9][a-zA-Z0-9._/-]*\.[a-zA-Z0-9]+$/,
-      "image_ref must be a safe library-relative filename (no '..', extension required)",
-    )
-    .optional(),
+  image_ref: safeImageRef.optional(),
 });
 
 export const ScriptSchema = z.object({

@@ -29,7 +29,7 @@ import {
   type RenderManifest,
 } from "../render-adapter.js";
 import { MAX_STOCK_WIDTH } from "../stock/select.js";
-import { assertValidSlug } from "./slug.js";
+import { assertValidSlug } from "../slug.js";
 
 const COMPOSITION_ID = "Episode";
 const ENTRY_POINT = "src/remotion/index.ts";

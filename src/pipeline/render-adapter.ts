@@ -7,18 +7,15 @@
 
 import type { Script } from "../schemas/script.js";
 import type { Storyboard } from "../schemas/storyboard.js";
-import { toCaption } from "./captions.js";
+import type { ManifestEntry } from "./stock/manifest.js";
+import { captionByShot } from "./captions.js";
 
-/** stock manifest entry 중 어댑터가 읽는 최소 형태(전체 스키마는 cli/stock.ts). */
-export interface RenderManifestEntry {
-  // stock.ts가 storyboard 순서대로 기록한 권위 있는 shot 인덱스. 있으면 우선 사용.
+// 어댑터가 읽는 manifest entry 필드(권위 타입 ManifestEntry의 부분집합).
+// shot_index는 옛 manifest엔 없을 수 있어 optional, provider는 옛 임의 문자열도 받게 넓게.
+export type RenderManifestEntry = Pick<ManifestEntry, "audio_ref" | "local_paths"> & {
   shot_index?: number;
-  audio_ref: string;
-  // stock provider | "library" | null(매치 0건 → 폴백). null이면 자산 없음.
   provider: string | null;
-  // episode 루트 기준 상대 경로들("episodes/<slug>/assets/stock/...").
-  local_paths: string[];
-}
+};
 
 export interface RenderManifest {
   entries: RenderManifestEntry[];
@@ -68,13 +65,9 @@ export function buildStockSrcByShotIndex(
 /**
  * EpisodeProps.captions (shot index → 화면 하단 자막 텍스트).
  *
- * render.md 의사코드와 동일: shot.audio_ref에서 line id를 떼고, script line의
- * text를 toCaption()으로 정제. 매칭 line이 없으면 빈 문자열(누락 cue 보존).
+ * 캡션 빌드 로직은 captions.ts의 `captionByShot`이 단일 소스다(SRT 경로와 공유).
+ * 여기서는 EpisodeProps 형태로 노출하는 얇은 어댑터만 유지한다.
  */
 export function buildCaptionsByShot(storyboard: Storyboard, script: Script): string[] {
-  const lineById = new Map(script.lines.map((l) => [l.id, l]));
-  return storyboard.shots.map((shot) => {
-    const id = shot.audio_ref.replace(/^assets\/audio\//, "").replace(/\.wav$/, "");
-    return toCaption(lineById.get(id)?.text ?? "");
-  });
+  return captionByShot(storyboard, script);
 }

@@ -14,12 +14,13 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import { StoryboardSchema, type StoryboardShot } from "../../schemas/storyboard.js";
-import { assertValidSlug } from "./slug.js";
+import { assertValidSlug } from "../slug.js";
 import { formatAttribution } from "../stock/attribution.js";
 import { cacheDir, copyIntoCache, download, resolveLibraryRef } from "../stock/cache.js";
 import { renderLibraryHtml, renderLibraryMarkdown } from "../stock/catalog.js";
 import { collectAssets, type ReuseFn } from "../stock/collect.js";
 import { renderContactSheet } from "../stock/contact-sheet.js";
+import type { Manifest, ManifestEntry } from "../stock/manifest.js";
 import {
   REUSE_FRACTION_CAP,
   catalogHtmlPath,
@@ -29,7 +30,7 @@ import {
   saveIndex,
   searchIndex,
 } from "../stock/library.js";
-import type { MediaResult, MediaType, Provider } from "../stock/types.js";
+import type { MediaResult, MediaType } from "../stock/types.js";
 
 const VIDEO_EXTS = new Set(["mp4", "webm", "mov", "m4v"]);
 
@@ -42,36 +43,6 @@ function libraryMediaType(p: string): "photo" | "video" {
 const SECONDS_PER_CLIP = 5;
 // shot 하나가 끌어올 수 있는 자산 상한. 너무 잘게 컷하면 산만해진다.
 const MAX_CLIPS_PER_SHOT = 4;
-
-interface ManifestEntry {
-  shot_index: number;
-  shot_id: string;
-  scene_id: string;
-  audio_ref: string;
-  media_type: "photo" | "video" | "color";
-  // 첫 매치 키워드 (back-compat). 전체는 keywords[].
-  keyword: string | null;
-  keywords: string[];
-  // 첫 자산의 provider (back-compat; null이면 매치 0건 → 폴백).
-  // "library" = 운영자 큐레이션 라이브러리 자산(attribution 불필요).
-  provider: Provider | "library" | null;
-  // 첫 자산 경로 (back-compat). 전체는 local_paths[].
-  local_path: string | null;
-  local_paths: string[];
-  // 첫 자산 attribution (back-compat). 전체는 attributions[].
-  attribution: MediaResult | null;
-  attributions: MediaResult[];
-  // 증분 fetch용 검색 입력 스냅샷 — 다음 run이 안 바뀐 shot을 재검색 없이 재사용할 수 있게.
-  // (옛 manifest엔 없음 → undefined → 입력 비교 미스 → 재검색. 안전한 마이그레이션.)
-  input_keywords: string[];
-  input_image_ref: string | null;
-}
-
-interface Manifest {
-  generated_at: string;
-  entries: ManifestEntry[];
-  attribution_block: string;
-}
 
 // shot duration → 끌어올 자산 수.
 function clipCountFor(durationSec: number): number {
@@ -229,19 +200,40 @@ async function main(): Promise<void> {
       continue;
     }
 
-    const colorEntry = (mediaType: ManifestEntry["media_type"], keyword: string | null): ManifestEntry => ({
+    // 한 shot의 manifest entry를 만든다 — 공통 필드(base + 입력 스냅샷)를 한곳에서 채우고,
+    // 호출부는 미디어 종류별 필드(provider/경로/attribution 등)만 넘긴다. color·library·stock
+    // 세 갈래가 같은 `...base, …, input_*` 보일러플레이트를 반복하던 걸 단일화한다.
+    type EntryMedia = Pick<
+      ManifestEntry,
+      | "media_type"
+      | "keyword"
+      | "keywords"
+      | "provider"
+      | "local_path"
+      | "local_paths"
+      | "attribution"
+      | "attributions"
+    >;
+    const makeEntry = (media: EntryMedia): ManifestEntry => ({
       ...base,
-      media_type: mediaType,
-      keyword,
-      keywords: [],
-      provider: null,
-      local_path: null,
-      local_paths: [],
-      attribution: null,
-      attributions: [],
+      ...media,
       input_keywords: inputKeywords,
       input_image_ref: inputImageRef,
     });
+    const colorEntry = (
+      mediaType: ManifestEntry["media_type"],
+      keyword: string | null,
+    ): ManifestEntry =>
+      makeEntry({
+        media_type: mediaType,
+        keyword,
+        keywords: [],
+        provider: null,
+        local_path: null,
+        local_paths: [],
+        attribution: null,
+        attributions: [],
+      });
 
     const need = mediaNeedFor(shot);
     if (!need) {
@@ -259,19 +251,18 @@ async function main(): Promise<void> {
         console.log(
           `  ${shotId} library ${mt} [${shot.image_ref}] → ${dl.relPath}${dl.hit ? " (cached)" : ""}`,
         );
-        entries.push({
-          ...base,
-          media_type: mt,
-          keyword: shot.image_ref,
-          keywords: [shot.image_ref],
-          provider: "library",
-          local_path: dl.relPath,
-          local_paths: [dl.relPath],
-          attribution: null,
-          attributions: [],
-          input_keywords: inputKeywords,
-          input_image_ref: inputImageRef,
-        });
+        entries.push(
+          makeEntry({
+            media_type: mt,
+            keyword: shot.image_ref,
+            keywords: [shot.image_ref],
+            provider: "library",
+            local_path: dl.relPath,
+            local_paths: [dl.relPath],
+            attribution: null,
+            attributions: [],
+          }),
+        );
         continue;
       }
       console.warn(
@@ -324,19 +315,18 @@ async function main(): Promise<void> {
         `(${cachedCount} cached)`,
     );
 
-    entries.push({
-      ...base,
-      media_type: mediaType,
-      keyword: keywords[0] ?? shot.broll_keywords[0] ?? null,
-      keywords,
-      provider: assets[0]!.provider,
-      local_path: localPaths[0]!,
-      local_paths: localPaths,
-      attribution: assets[0]!,
-      attributions: assets,
-      input_keywords: inputKeywords,
-      input_image_ref: inputImageRef,
-    });
+    entries.push(
+      makeEntry({
+        media_type: mediaType,
+        keyword: keywords[0] ?? shot.broll_keywords[0] ?? null,
+        keywords,
+        provider: assets[0]!.provider,
+        local_path: localPaths[0]!,
+        local_paths: localPaths,
+        attribution: assets[0]!,
+        attributions: assets,
+      }),
+    );
     usedForAttribution.push(...assets);
   }
 

@@ -4,11 +4,11 @@ import {
   interpolate,
   OffthreadVideo,
   Sequence,
-  staticFile,
   useCurrentFrame,
 } from "remotion";
 import type { StockBgProps } from "../../schemas/script.js";
 import { colors } from "../theme/index.js";
+import { resolveMediaSrc } from "./_media.js";
 import { KenBurnsImage } from "./_KenBurnsImage.js";
 
 // 한 visual 그룹을 채우는 B-roll 컷 세그먼트. Episode 컴포지션이 stock 매니페스트와
@@ -25,11 +25,6 @@ type Props = StockBgProps & { segments?: StockSegmentInput[] };
 
 // 사진 컷마다 다른 Ken Burns 방향을 돌려 "같은 무드 다른 움직임"을 준다.
 const KEN_BURNS_DIRS = ["zoom-in", "pan-right", "zoom-out", "pan-left"] as const;
-
-function resolveMediaSrc(src: string): string {
-  if (/^https?:\/\//.test(src)) return src;
-  return staticFile(src);
-}
 
 // 컷 진입 시 짧은 fade-in으로 하드컷의 거슬림을 덜어준다 (세그먼트 로컬 프레임 기준).
 function ClipFade({

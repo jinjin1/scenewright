@@ -11,21 +11,21 @@
 
 import path from "node:path";
 import { isBlankish } from "./rank.js";
-import type { MediaResult, Provider } from "./types.js";
-import { escapeHtml as esc } from "../html.js";
+import type { ManifestEntry } from "./manifest.js";
+import { escapeHtml as esc, SHEET_BASE_STYLE, sheetShell } from "../html.js";
 
-// cli/stock.ts의 ManifestEntry/Manifest와 구조적으로 호환되는 최소 입력 타입
-// (순환 import를 피하려고 여기서 좁게 재선언).
-export interface SheetEntry {
-  shot_index: number;
-  shot_id: string;
-  scene_id: string;
-  media_type: "photo" | "video" | "color";
-  keywords: string[];
-  provider: Provider | "library" | null;
-  local_paths: string[];
-  attributions: MediaResult[];
-}
+// contact-sheet가 읽는 manifest entry 필드(권위 타입 ManifestEntry의 부분집합).
+export type SheetEntry = Pick<
+  ManifestEntry,
+  | "shot_index"
+  | "shot_id"
+  | "scene_id"
+  | "media_type"
+  | "keywords"
+  | "provider"
+  | "local_paths"
+  | "attributions"
+>;
 
 export interface SheetManifest {
   generated_at: string;
@@ -68,20 +68,12 @@ function entryThumbs(e: SheetEntry): Thumb[] {
   });
 }
 
-const STYLE = `
-  :root { color-scheme: dark; }
-  body { margin: 0; background: #0c0d10; color: #e7e7ea;
-    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-  header { padding: 20px 24px; border-bottom: 1px solid #23252b; position: sticky; top: 0;
-    background: #0c0d10ee; backdrop-filter: blur(6px); }
-  h1 { margin: 0 0 4px; font-size: 18px; }
-  .summary { color: #9aa0a6; font-size: 13px; }
-  .summary b { color: #e7e7ea; }
+// SHEET_BASE_STYLE(공유)에 컨택트시트 고유 규칙만 덧붙인다.
+const STYLE =
+  SHEET_BASE_STYLE +
+  `
   .warn { color: #f0b429; }
   .bad { color: #f06151; }
-  .grid { display: grid; gap: 14px; padding: 20px 24px;
-    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
-  .card { background: #16181d; border: 1px solid #23252b; border-radius: 10px; overflow: hidden; }
   .card.missing { border-color: #f06151; }
   .card.flagged { border-color: #f0b429; }
   .thumbs { display: flex; flex-wrap: wrap; gap: 2px; background: #000; min-height: 96px; }
@@ -89,15 +81,9 @@ const STYLE = `
   .thumbs.multi img { flex: 1 1 calc(50% - 1px); height: 84px; }
   .ph { display: flex; align-items: center; justify-content: center; width: 100%; height: 130px;
     color: #6b7077; font-size: 13px; text-align: center; padding: 8px; }
-  .meta { padding: 9px 11px; }
   .row { display: flex; justify-content: space-between; gap: 8px; }
   .idx { font-weight: 600; }
   .scene { color: #7c818a; font-size: 12px; }
-  .kw { color: #b9bec6; font-size: 12px; margin-top: 4px; word-break: break-word; }
-  .badge { display: inline-block; font-size: 11px; padding: 1px 6px; border-radius: 4px;
-    margin-top: 6px; margin-right: 4px; }
-  .b-video { background: #1f3a5f; color: #9cc4ff; }
-  .b-photo { background: #2a2f38; color: #aeb4bd; }
   .b-lib { background: #2d3b2a; color: #a6d49a; }
   .b-illo { background: #3a2d4f; color: #c9a6ff; }
   .b-blank { background: #4f3a1f; color: #f0b429; }
@@ -172,20 +158,12 @@ export function renderContactSheet(manifest: SheetManifest, slug: string): strin
     `<span class="${missing.length ? "bad" : ""}"><b>${missing.length}</b> missing</span> · ` +
     `<span class="${blankCount ? "warn" : ""}"><b>${blankCount}</b> blank-ish</span></span>`;
 
-  return `<!doctype html>
-<html lang="ko"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(slug)} — stock contact sheet</title>
-<style>${STYLE}</style></head>
-<body>
-<header>
-  <h1>${esc(slug)} — 렌더 전 스톡 검수</h1>
+  return sheetShell({
+    title: `${esc(slug)} — stock contact sheet`,
+    style: STYLE,
+    headerHtml: `  <h1>${esc(slug)} — 렌더 전 스톡 검수</h1>
   ${summary}
-  <div class="summary" style="margin-top:6px">생성 ${esc(manifest.generated_at)} · 빨강=미디어 누락(키워드 재검토) · 노랑=blank/목업 의심. 문제 shot은 키워드 고치고 <code>npm run stock</code> 재실행(렌더 전).</div>
-</header>
-<div class="grid">
-${cards.join("\n")}
-</div>
-</body></html>
-`;
+  <div class="summary" style="margin-top:6px">생성 ${esc(manifest.generated_at)} · 빨강=미디어 누락(키워드 재검토) · 노랑=blank/목업 의심. 문제 shot은 키워드 고치고 <code>npm run stock</code> 재실행(렌더 전).</div>`,
+    gridBody: cards.join("\n"),
+  });
 }

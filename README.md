@@ -70,6 +70,19 @@ cp .env.example .env   # (선택) 스톡 API 키 입력
 
 산출물: `episodes/my-first-topic/out/final.mp4`.
 
+## Claude Code로 샘플 영상 바로 만들기
+
+위 단계를 일일이 칠 필요 없이, **Claude Code 세션에 아래 프롬프트 하나**를 붙여넣으면 리포를 클론하고 포함된 샘플 에피소드 `why-sky-blue`(왜 하늘은 파란가)를 `final.mp4`까지 끝까지 구워 줍니다. 이 샘플은 이미 `storyboard` 단계까지 만들어져 있어, 무거운 단계(`/tts` → `/render`)만 돌면 됩니다.
+
+```
+https://github.com/jinjin1/scenewright.git 를 클론해서, 포함된 샘플 에피소드 "why-sky-blue"의 최종 영상(final.mp4)을 끝까지 만들어주세요.
+완료되면 final.mp4 경로와 영상 길이를 알려주고, 그 파일이 들어 있는 폴더를 파일 탐색기에서 (파일이 선택된 상태로) 열어주세요.
+```
+
+> **스톡 API 키가 없어도 됩니다 — 대신 b-roll이 단색 배경으로 폴백됩니다.** 키를 안 넣으면 실사 영상/사진 자리에 색 배경이 깔립니다. 그래도 **내레이션·번인 자막·애니메이션·전환이 모두 입혀진 완성 `final.mp4`**가 나오므로, 파이프라인이 실제로 도는지·출력이 어떤 느낌인지 **빠르게 확인**하기에는 충분합니다. 실사 b-roll까지 보려면 `.env`에 무료 스톡 키(Pexels/Unsplash/Pixabay)를 넣고 `/render`만 다시 돌리세요.
+>
+> 전제: Claude Code · Node ≥ 18.18 · Python 3.10 + `uv` (위 [사전 요건](#사전-요건)). 첫 실행에선 `npm install`·Python 환경 구성·Supertonic 모델 다운로드(첫 합성 시 `~/.cache`)에 더해 TTS 합성(~수 분)과 Remotion 렌더가 진행됩니다.
+
 ## 채널 설정 (어떤 주제든)
 
 엔진은 **도메인 중립**입니다. 주제 관련 내용은 세 파일에 모여 있습니다:

@@ -2,7 +2,7 @@
 // 똑같이 반복하던 (1) slug 검증 + usage 안내 + exit(2), (2) main 실행 + 에러 → exit(1)을 모은다.
 // `usage`는 "usage: " 뒤에 붙는 문구(예: "captions <episode-slug>", "thumbnail <episode-slug> [frame]").
 
-import { assertValidSlug } from "./slug.js";
+import { assertValidSlug } from "../slug.js";
 
 export function runCli(usage: string, main: (slug: string) => Promise<void>): void {
   const slug = process.argv[2];

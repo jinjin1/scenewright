@@ -2,7 +2,6 @@ import { fitTextOnNLines } from "@remotion/layout-utils";
 import {
   AbsoluteFill,
   OffthreadVideo,
-  staticFile,
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
@@ -10,17 +9,13 @@ import type { SplitVisualProps } from "../../schemas/script.js";
 import { colors, motion, typography } from "../theme/index.js";
 import { AmbientBg } from "./_AmbientBg.js";
 import { useEntrance } from "./_anim.js";
+import { resolveMediaSrc } from "./_media.js";
 import { KenBurnsImage } from "./_KenBurnsImage.js";
 
 // `src`/`durationInFrames`는 Episode가 주입하는 런타임 필드. src 없으면 텍스트 풀폭 폴백.
 type Props = SplitVisualProps & { src?: string; durationInFrames?: number };
 
 const PAD = 120;
-
-function resolveMediaSrc(src: string): string {
-  if (/^https?:\/\//.test(src)) return src;
-  return staticFile(src);
-}
 
 // 이미지 절반 + 텍스트 절반. 정의·설명을 그 사례 이미지와 나란히 세운다.
 // items가 있으면 불릿 리스트, 없으면 body 문단. 미디어 0건이면 텍스트가 풀폭으로 폴백.

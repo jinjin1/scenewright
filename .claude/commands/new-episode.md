@@ -11,12 +11,12 @@ argument-hint: <slug> [source-file-path]
 
 `$ARGUMENTS` 첫 단어 = `slug` (필수), 두 번째 단어 = `source-file-path` (선택).
 
-- `slug`는 `/^[a-z0-9-]+$/` 형식. 예: `pmf-discovery`, `rice-fallacy`, `ep-01`
+- `slug`는 `/^[a-z0-9][a-z0-9-]{0,63}$/` 형식. 예: `pmf-discovery`, `rice-fallacy`, `ep-01`
 - `source-file-path`가 주어지면 그 파일 내용을 `source.txt`로 복사. 없으면 운영자가 paste할 자리만 만들고 안내
 
 ## 동작
 
-1. `slug` 검증 — `/^[a-z0-9-]+$/` 위반하면 중단하고 사용 예시 안내
+1. `slug` 검증 — `/^[a-z0-9][a-z0-9-]{0,63}$/` 위반하면 중단하고 사용 예시 안내
 2. `episodes/<slug>/` 디렉터리가 이미 존재하면 **중단** — 운영자에게 다른 슬러그 또는 `rm -rf episodes/<slug>` 후 재시도 안내 (자동 삭제 금지)
 3. `mkdir -p episodes/<slug>/assets/{audio,stock}` `episodes/<slug>/out`
 4. `source-file-path`가 있으면 `cp $source episodes/<slug>/source.txt`

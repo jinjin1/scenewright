@@ -20,7 +20,6 @@
 
 import { TRANSLITERATION_MAP } from "./transliterate.js";
 import type { Script, ScriptLine, VisualSpec } from "../schemas/script.js";
-import type { Treatment } from "../schemas/treatment.js";
 
 export type Severity = "error" | "warn" | "info";
 
@@ -61,8 +60,14 @@ const SHORT_LINE_MAX = 20;
 // 위험한 종결: 명사 뒤 copula "입니다/이다"와 짧은 구어 어미. 길고 견고한 동사 어미
 // ("~살펴보겠습니다" 등 "겠습니다"류)는 끝 음절이 빠져도 알아들을 수 있어 제외한다
 // — "습니다"를 통째로 잡지 않고 copula "입니다"만 잡는 게 핵심(오탐 방지).
-const RISKY_ENDING =
-  /(입니다|이다|어요|에요|예요|아요|해요|세요|죠|네요|까요)[.?!…"'”’」』)\]]*\s*$/;
+// 문장 종결 구두점(마침표·물음표·느낌표·말줄임표 + 닫는 따옴표/괄호류).
+// 종결 판정 정규식 3종(RISKY_ENDING·SENTENCE_END_OK·tailLatin)이 공유하는 단일 소스 —
+// 정규식 문자 클래스 내부에 그대로 들어가므로 닫는 `]`만 escape한다.
+const SENT_END_CLASS = `[.?!…"'”’」』)\\]]`;
+
+const RISKY_ENDING = new RegExp(
+  `(입니다|이다|어요|에요|예요|아요|해요|세요|죠|네요|까요)${SENT_END_CLASS}*\\s*$`,
+);
 
 // Latin 토큰(슬래시 포함, 길이 2+). "A/B", "UX/UI", "Notion" 등.
 const LATIN_TOKEN_RE = /[A-Za-z][A-Za-z/]*[A-Za-z]/g;
@@ -81,7 +86,9 @@ const TRANSLATIONESE: { re: RegExp; label: string }[] = [
 ];
 
 // 한국어 종결로 끝나는가(문장부호 또는 종결어미). 아니면 TTS 잘림/어색 위험.
-const SENTENCE_END_OK = /(다|요|죠|까|네|군|함|음|죠|걸|데)\s*$|[.?!…"'”’」』)\]]\s*$/;
+const SENTENCE_END_OK = new RegExp(
+  `(다|요|죠|까|네|군|함|음|걸|데)\\s*$|${SENT_END_CLASS}\\s*$`,
+);
 
 // AI-영상 b-roll 클리셰 — 스톡에서 누구나 쓰는 식상한 장면(악수·팀워크 포즈·발광 전구
 // 등). /script "구체화 사다리"가 예방하지만, 새어든 클리셰 키워드를 결정적으로 검출한다.
@@ -138,135 +145,137 @@ function visibleFields(visual: VisualSpec): VisibleField[] {
     (arr ?? []).forEach((v, i) => push(`${field}[${i}]`, v));
   };
 
-  const p = visual.props as Record<string, unknown>;
+  // visual은 discriminated union이라 case 안에서 visual.props가 해당 컴포넌트 props로
+  // 정밀하게 좁혀진다 — `as` 캐스트 없이 타입 안전하게 필드를 읽는다.
   switch (visual.component) {
     case "TitleCard":
-      push("title", p.title as string);
-      push("subtitle", p.subtitle as string);
-      push("eyebrow", p.eyebrow as string, false);
+      push("title", visual.props.title);
+      push("subtitle", visual.props.subtitle);
+      push("eyebrow", visual.props.eyebrow, false);
       break;
     case "BulletList":
-      push("heading", p.heading as string);
-      pushArr("items", p.items as string[]);
+      push("heading", visual.props.heading);
+      pushArr("items", visual.props.items);
       break;
     case "HighlightedLine":
-      push("text", p.text as string);
-      push("eyebrow", p.eyebrow as string, false);
+      push("text", visual.props.text);
+      push("eyebrow", visual.props.eyebrow, false);
       // highlights는 orphan 검사에서 별도로 다룸(여기선 screen-english용으로만).
-      pushArr("highlights", p.highlights as string[]);
+      pushArr("highlights", visual.props.highlights);
       break;
     case "ProgressiveList":
-      push("heading", p.heading as string);
-      push("eyebrow", p.eyebrow as string, false);
-      pushArr("items", p.items as string[]);
+      push("heading", visual.props.heading);
+      push("eyebrow", visual.props.eyebrow, false);
+      pushArr("items", visual.props.items);
       break;
     case "StatHero":
-      push("eyebrow", p.eyebrow as string, false);
-      push("caption", p.caption as string);
+      push("eyebrow", visual.props.eyebrow, false);
+      push("caption", visual.props.caption);
       // prefix/suffix($, %, x)는 화면 영어 검사 제외(단위라 의도적).
-      push("prefix", p.prefix as string, false);
-      push("suffix", p.suffix as string, false);
+      push("prefix", visual.props.prefix, false);
+      push("suffix", visual.props.suffix, false);
       break;
     case "SweepDivider":
-      push("eyebrow", p.eyebrow as string, false);
-      push("label", p.label as string);
-      push("caption", p.caption as string);
+      push("eyebrow", visual.props.eyebrow, false);
+      push("label", visual.props.label);
+      push("caption", visual.props.caption);
       break;
     case "GlitchTransition":
-      push("eyebrow", p.eyebrow as string, false);
-      push("label", p.label as string);
+      push("eyebrow", visual.props.eyebrow, false);
+      push("label", visual.props.label);
       break;
     case "TerminalCard":
       // CLI/코드라 Latin이 본질 — screen-english 제외.
-      push("windowTitle", p.windowTitle as string, false);
-      (p.lines as { text: string }[] | undefined)?.forEach((l, i) =>
-        push(`lines[${i}].text`, l.text, false),
-      );
+      push("windowTitle", visual.props.windowTitle, false);
+      visual.props.lines?.forEach((l, i) => push(`lines[${i}].text`, l.text, false));
       break;
     case "PixelTitle":
       // "영문/숫자 권장" 시그니처 — screen-english 제외.
-      push("label", p.label as string, false);
-      push("subtitle", p.subtitle as string, false);
+      push("label", visual.props.label, false);
+      push("subtitle", visual.props.subtitle, false);
       break;
     case "HeroImage":
-      push("title", p.title as string);
-      push("caption", p.caption as string);
-      push("eyebrow", p.eyebrow as string, false);
+      push("title", visual.props.title);
+      push("caption", visual.props.caption);
+      push("eyebrow", visual.props.eyebrow, false);
       break;
     case "SplitVisual":
-      push("heading", p.heading as string);
-      push("body", p.body as string);
-      push("eyebrow", p.eyebrow as string, false);
-      pushArr("items", p.items as string[]);
+      push("heading", visual.props.heading);
+      push("body", visual.props.body);
+      push("eyebrow", visual.props.eyebrow, false);
+      pushArr("items", visual.props.items);
       break;
     case "ScreenshotCallout":
-      push("eyebrow", p.eyebrow as string, false);
-      push("title", p.title as string);
-      push("caption", p.caption as string);
-      (p.annotations as { label?: string }[] | undefined)?.forEach((a, i) =>
+      push("eyebrow", visual.props.eyebrow, false);
+      push("title", visual.props.title);
+      push("caption", visual.props.caption);
+      visual.props.annotations?.forEach((a, i) =>
         push(`annotations[${i}].label`, a.label),
       );
       break;
     case "FlowDiagram":
-      push("eyebrow", p.eyebrow as string, false);
-      push("heading", p.heading as string);
-      (p.nodes as { label: string; sublabel?: string }[] | undefined)?.forEach((n, i) => {
+      push("eyebrow", visual.props.eyebrow, false);
+      push("heading", visual.props.heading);
+      visual.props.nodes?.forEach((n, i) => {
         push(`nodes[${i}].label`, n.label);
         push(`nodes[${i}].sublabel`, n.sublabel);
       });
       break;
     case "PixelBarChart":
-      push("eyebrow", p.eyebrow as string, false);
-      push("heading", p.heading as string);
-      push("caption", p.caption as string);
-      (p.bars as { label?: string }[] | undefined)?.forEach((b, i) =>
-        push(`bars[${i}].label`, b.label),
-      );
+      push("eyebrow", visual.props.eyebrow, false);
+      push("heading", visual.props.heading);
+      push("caption", visual.props.caption);
+      visual.props.bars?.forEach((b, i) => push(`bars[${i}].label`, b.label));
       break;
     case "PixelDonut":
-      push("eyebrow", p.eyebrow as string, false);
-      push("heading", p.heading as string);
-      push("caption", p.caption as string);
+      push("eyebrow", visual.props.eyebrow, false);
+      push("heading", visual.props.heading);
+      push("caption", visual.props.caption);
       break;
     case "PixelGauge":
-      push("eyebrow", p.eyebrow as string, false);
-      push("heading", p.heading as string);
-      push("label", p.label as string);
-      push("caption", p.caption as string);
+      push("eyebrow", visual.props.eyebrow, false);
+      push("heading", visual.props.heading);
+      push("label", visual.props.label);
+      push("caption", visual.props.caption);
       break;
     case "PixelStepTracker":
-      push("eyebrow", p.eyebrow as string, false);
-      push("heading", p.heading as string);
-      pushArr("steps", p.steps as string[]);
+      push("eyebrow", visual.props.eyebrow, false);
+      push("heading", visual.props.heading);
+      pushArr("steps", visual.props.steps);
       break;
     case "PixelRoadmap":
-      push("eyebrow", p.eyebrow as string, false);
-      push("heading", p.heading as string);
-      (p.milestones as { label: string }[] | undefined)?.forEach((m, i) =>
+      push("eyebrow", visual.props.eyebrow, false);
+      push("heading", visual.props.heading);
+      visual.props.milestones?.forEach((m, i) =>
         push(`milestones[${i}].label`, m.label),
       );
       break;
     case "DecisionMatrix":
-      push("eyebrow", p.eyebrow as string, false);
-      push("title", p.title as string);
-      (p.rows as { ko: string; en?: string }[] | undefined)?.forEach((r, i) => {
+      push("eyebrow", visual.props.eyebrow, false);
+      push("title", visual.props.title);
+      visual.props.rows?.forEach((r, i) => {
         push(`rows[${i}].ko`, r.ko);
         // en은 의도적 영어 병기 — screen-english 제외(eyebrow와 동일 정신).
         push(`rows[${i}].en`, r.en, false);
       });
       break;
     case "ReactionBeat":
-      push("eyebrow", p.eyebrow as string, false);
-      push("headline", p.headline as string);
+      push("eyebrow", visual.props.eyebrow, false);
+      push("headline", visual.props.headline);
       break;
     case "StarburstReveal":
-      push("eyebrow", p.eyebrow as string, false);
-      push("headline", p.headline as string);
-      push("caption", p.caption as string);
+      push("eyebrow", visual.props.eyebrow, false);
+      push("headline", visual.props.headline);
+      push("caption", visual.props.caption);
       break;
-    // StockBg: 화면에 노출되는 텍스트 없음.
-    default:
+    case "StockBg":
+      // 화면에 노출되는 텍스트 없음.
       break;
+    default: {
+      // 새 컴포넌트가 union에 추가됐는데 위 case를 빠뜨리면 tsc가 막는다(검사 누락 방지).
+      const _exhaustive: never = visual;
+      void _exhaustive;
+    }
   }
   return out;
 }
@@ -366,7 +375,9 @@ function checkSentenceEnd(line: ScriptLine, idx: number, out: Finding[]): void {
     });
   }
   // 마지막 토큰이 Latin이면(예: "...это RICE") TTS가 끝을 잘릴 위험이 가장 크다.
-  const tailLatin = text.match(/[A-Za-z][A-Za-z/]*\s*[.?!…"」』’)\]]*$/);
+  const tailLatin = text.match(
+    new RegExp(`[A-Za-z][A-Za-z/]*\\s*${SENT_END_CLASS}*$`),
+  );
   if (tailLatin) {
     out.push({
       lineId: line.id,
@@ -621,278 +632,7 @@ export function summarize(findings: Finding[]): LintSummary {
   return s;
 }
 
-// ── 컴포넌트 다양성 (whole-video) ──────────────────────────────────────────
-//
-// 운영자 피드백: 영상이 단조롭다 — 한 컴포넌트(주로 HighlightedLine)가 화면을 독식하고
-// 카탈로그 19종 중 소수만 등장한다. /script 의사결정 트리가 greedy "first-match-wins"라
-// 구조적으로 수렴하기 때문(실측 내부 파일럿 58샷: 7종만·HighlightedLine 34%·image-first 0).
-// 여기서 carry-forward를 해소해 *시청자가 실제로 보는* 컴포넌트 분포를 측정하고,
-// 과소-다양성을 권고(warn) 수준으로 경고한다 — 하드 게이트가 아니다(부적합 컴포넌트를
-// 다양성 채우려 억지로 끼워넣는 역효과 회피). 운영자가 리포트를 보고 판단.
-
-const IMAGE_FIRST_COMPONENTS = new Set<VisualSpec["component"]>([
-  "HeroImage",
-  "SplitVisual",
-  "ScreenshotCallout",
-]);
-
-// 짧은 스크립트(테스트·아주 짧은 영상)는 다양성 통계가 무의미 — 이 미만이면 스킵.
-const DIVERSITY_MIN_LINES = 16;
-// 10~15분 영상이 쓸 수 있는 distinct 컴포넌트 바닥(짧은 영상은 길이에 비례해 완화).
-const DISTINCT_FLOOR = 8;
-// 단일 컴포넌트가 차지해도 되는 최대 shot 점유율(초과 시 "독식").
-const DOMINANT_SHARE_MAX = 0.25;
-// 같은 컴포넌트의 *서로 다른 인스턴스*가 연속 노출돼도 되는 최대 개수.
-// carry-forward(한 비주얼을 여러 라인 hold)는 인스턴스 1개라 여기 안 걸린다 —
-// 그건 carry-forward 30초 규칙의 영역. 여기선 "다른 다이어그램 5개 연속" 같은 단조 클러스터만.
-const SAME_COMPONENT_RUN_MAX = 3;
-
-// ── 씬별 분량 예산 (결정적 분량 게이트) ──────────────────────────────────────
-// Supertonic speed 1.4 실측 ≈ 9자/초. 한 씬 예산 = duration_sec × 9.
-// 주의: chars는 transliterate 적용 전 `line.text.length`다(TTS는 transliterate(text)를 합성).
-//   한글 위주 내레이션은 차이가 미미하나 영어 약어 많은 라인은 음차 확장만큼 약간 드리프트한다.
-// 단일 패스 /script는 프롬프트에 씬별 예산을 줘도 누적 분량을 못 느껴 ~60%로 미달하는
-// 경향이 끈질기다(실측: baseline 62% / 예산 주입 후에도 58%). 그래서 프롬프트 자가점검이
-// 아니라 *코드가 세어* 90% 미달 씬을 플래그하는 결정적 점검으로 잡는다.
-export const CHARS_PER_SEC = 9;
-const UNDER_BUDGET_RATIO = 0.9;
-const SCENE_PREFIX_RE = /^(scene\d+)-/;
-
-export interface SceneLengthRow {
-  sceneId: string;
-  beat: string;
-  durationSec: number;
-  /** 예산 = round(durationSec × CHARS_PER_SEC). */
-  budget: number;
-  /** 이 씬 라인들의 내레이션(text) 글자수 합. */
-  chars: number;
-  lines: number;
-  /** chars / budget. */
-  pct: number;
-  /** budget의 90% 미만(예산 0 제외). */
-  underBudget: boolean;
-}
-
-export interface SceneLengthReport {
-  /** treatment에 씬이 있는가. false면 검사 스킵. */
-  applies: boolean;
-  rows: SceneLengthRow[];
-  totalChars: number;
-  totalBudget: number;
-  totalPct: number;
-  /** 예산 90% 미달 씬 수. */
-  underBudgetCount: number;
-  /** treatment에 있으나 라인이 하나도 없는 씬 id. */
-  emptyScenes: string[];
-  /** line.id의 "sceneNN-" 접두사가 treatment 씬에 매칭되지 않는 라인 수. */
-  orphanLines: number;
-}
-
-/**
- * 씬별 내레이션 글자수를 treatment 예산(duration_sec × 9)과 대조한다.
- * 단일 패스 /script의 끈질긴 분량 미달(실측 ~60%)을 결정적으로 잡는 게이트 —
- * line.id의 "sceneNN-" 접두사로 그룹핑하므로 storyboard 평탄화 전 script.json에 바로 적용된다.
- * lintScript/analyzeDiversity와 별개의 whole-video 분석(분량 축).
- */
-export function analyzeSceneLength(script: Script, treatment: Treatment): SceneLengthReport {
-  const charsByScene = new Map<string, number>();
-  const linesByScene = new Map<string, number>();
-  const treatmentIds = new Set(treatment.scenes.map((s) => s.id));
-  let orphanLines = 0;
-  for (const line of script.lines) {
-    const sid = line.id.match(SCENE_PREFIX_RE)?.[1];
-    if (!sid || !treatmentIds.has(sid)) {
-      orphanLines++;
-      continue;
-    }
-    charsByScene.set(sid, (charsByScene.get(sid) ?? 0) + line.text.length);
-    linesByScene.set(sid, (linesByScene.get(sid) ?? 0) + 1);
-  }
-
-  const rows: SceneLengthRow[] = treatment.scenes.map((s) => {
-    const chars = charsByScene.get(s.id) ?? 0;
-    const budget = Math.round(s.duration_sec * CHARS_PER_SEC);
-    const pct = budget > 0 ? chars / budget : 0;
-    return {
-      sceneId: s.id,
-      beat: s.beat,
-      durationSec: s.duration_sec,
-      budget,
-      chars,
-      lines: linesByScene.get(s.id) ?? 0,
-      pct,
-      underBudget: budget > 0 && pct < UNDER_BUDGET_RATIO,
-    };
-  });
-
-  const totalChars = rows.reduce((a, r) => a + r.chars, 0);
-  const totalBudget = rows.reduce((a, r) => a + r.budget, 0);
-  return {
-    applies: treatment.scenes.length > 0,
-    rows,
-    totalChars,
-    totalBudget,
-    totalPct: totalBudget > 0 ? totalChars / totalBudget : 0,
-    underBudgetCount: rows.filter((r) => r.underBudget).length,
-    emptyScenes: rows.filter((r) => r.chars === 0).map((r) => r.sceneId),
-    orphanLines,
-  };
-}
-
-export type DiversitySeverity = "warn" | "info";
-
-export interface DiversityFlag {
-  kind: "distinct" | "dominant" | "run" | "image-first" | "glitch";
-  severity: DiversitySeverity;
-  message: string;
-}
-
-export interface DiversityReport {
-  /** min-lines 가드 통과 여부. false면 검사 스킵(짧은 스크립트). */
-  applies: boolean;
-  totalLines: number;
-  /** carry-forward 해소 후 등장하는 distinct 컴포넌트 수. */
-  distinct: number;
-  /** distinct 권장 바닥(영상 길이에 비례해 완화된 실효 임계). */
-  distinctFloor: number;
-  /** 컴포넌트별 등장 shot 수(내림차순) + 점유율. */
-  counts: { component: string; count: number; share: number }[];
-  /** image-first 씬(HeroImage/SplitVisual/ScreenshotCallout) shot 수. */
-  imageFirst: number;
-  /** 같은 컴포넌트 인스턴스가 가장 길게 연속된 run. */
-  longestRun: {
-    component: string;
-    instances: number;
-    startIndex: number;
-    startLineId: string;
-  } | null;
-  flags: DiversityFlag[];
-}
-
-interface EffectiveLine {
-  component: VisualSpec["component"] | null;
-  /** 이 라인이 새 비주얼 인스턴스를 명시했나(아니면 직전 visual을 carry-forward). */
-  explicit: boolean;
-  lineId: string;
-}
-
-// carry-forward 해소: visual 생략 라인은 직전 visual 컴포넌트를 잇는다.
-function effectiveComponents(script: Script): EffectiveLine[] {
-  let prev: VisualSpec["component"] | null = null;
-  return script.lines.map((line) => {
-    if (line.visual) {
-      prev = line.visual.component;
-      return { component: prev, explicit: true, lineId: line.id };
-    }
-    return { component: prev, explicit: false, lineId: line.id };
-  });
-}
-
-/**
- * carry-forward를 해소해 시청자가 실제로 보는 컴포넌트 분포를 측정하고,
- * 과소-다양성(소수 종 편중·독식·동일 컴포넌트 연속·image-first 부재)을 경고한다.
- * per-line findings(lintScript)와 별개의 whole-video 분석.
- */
-export function analyzeDiversity(script: Script): DiversityReport {
-  const eff = effectiveComponents(script);
-  const totalLines = eff.length;
-
-  const countMap = new Map<string, number>();
-  for (const e of eff) {
-    if (!e.component) continue;
-    countMap.set(e.component, (countMap.get(e.component) ?? 0) + 1);
-  }
-  const counted = [...countMap.values()].reduce((a, b) => a + b, 0);
-  const counts = [...countMap.entries()]
-    .map(([component, count]) => ({ component, count, share: counted ? count / counted : 0 }))
-    .sort((a, b) => b.count - a.count);
-
-  const distinct = counts.length;
-  const imageFirst = counts
-    .filter((c) => IMAGE_FIRST_COMPONENTS.has(c.component as VisualSpec["component"]))
-    .reduce((a, c) => a + c.count, 0);
-
-  // 같은 컴포넌트 *인스턴스*(explicit) 연속 run 중 가장 긴 것.
-  let longestRun: DiversityReport["longestRun"] = null;
-  let i = 0;
-  while (i < eff.length) {
-    const comp = eff[i]!.component;
-    if (!comp) {
-      i += 1;
-      continue;
-    }
-    let j = i;
-    let instances = 0;
-    while (j < eff.length && eff[j]!.component === comp) {
-      if (eff[j]!.explicit) instances += 1;
-      j += 1;
-    }
-    if (!longestRun || instances > longestRun.instances) {
-      longestRun = { component: comp, instances, startIndex: i, startLineId: eff[i]!.lineId };
-    }
-    i = j;
-  }
-
-  // 짧은 영상은 distinct 바닥을 길이에 비례해 완화(16라인→4, 40+라인→8).
-  const distinctFloor = Math.min(DISTINCT_FLOOR, Math.max(2, Math.ceil(totalLines / 5)));
-
-  const flags: DiversityFlag[] = [];
-  const applies = totalLines >= DIVERSITY_MIN_LINES;
-  if (applies) {
-    if (distinct < distinctFloor) {
-      flags.push({
-        kind: "distinct",
-        severity: "warn",
-        message: `컴포넌트 ${distinct}종만 등장(권장 ≥${distinctFloor}). 카탈로그 19종 중 일부만 쓰여 단조롭다 — 안 쓴 컴포넌트(StatHero·SplitVisual·HeroImage·TerminalCard 등)를 적극 끼워라.`,
-      });
-    }
-    const top = counts[0];
-    if (top && top.share > DOMINANT_SHARE_MAX) {
-      flags.push({
-        kind: "dominant",
-        severity: "warn",
-        message: `${top.component}가 전체 shot의 ${(top.share * 100).toFixed(0)}%를 독식(권장 ≤${(DOMINANT_SHARE_MAX * 100).toFixed(0)}%, ${top.count}/${counted}). 일부 라인을 인접한 다른 컴포넌트로 교체해 분산하라.`,
-      });
-    }
-    if (longestRun && longestRun.instances > SAME_COMPONENT_RUN_MAX) {
-      flags.push({
-        kind: "run",
-        severity: "warn",
-        message: `${longestRun.component} 인스턴스 ${longestRun.instances}개 연속(#${longestRun.startIndex} ${longestRun.startLineId}부터, 권장 ≤${SAME_COMPONENT_RUN_MAX}). 서로 다른 컴포넌트로 결을 끊어라.`,
-      });
-    }
-    if (imageFirst === 0) {
-      flags.push({
-        kind: "image-first",
-        severity: "warn",
-        message: `image-first 씬(SplitVisual/HeroImage/ScreenshotCallout)이 0개. 정책상 사례·제품은 배경(StockBg)보다 본문 이미지가 우선 — 최소 1~2개 도입.`,
-      });
-    }
-    // GlitchTransition: 영상당 최소 1회 필수(가장 강한 반전·임팩트 모먼트), 최대 2회.
-    const glitch = counts.find((c) => c.component === "GlitchTransition")?.count ?? 0;
-    if (glitch === 0) {
-      flags.push({
-        kind: "glitch",
-        severity: "warn",
-        message: `GlitchTransition이 0회 — 영상당 최소 1회 필수. 가장 강한 반전·"잘못된 X" 임팩트 한 줄을 GlitchTransition으로.`,
-      });
-    } else if (glitch > 2) {
-      flags.push({
-        kind: "glitch",
-        severity: "warn",
-        message: `GlitchTransition ${glitch}회 — 과사용(권장 ≤2). 산만해지니 가장 강한 1~2개만 남겨라.`,
-      });
-    }
-  }
-
-  return {
-    applies,
-    totalLines,
-    distinct,
-    distinctFloor,
-    counts,
-    imageFirst,
-    longestRun,
-    flags,
-  };
-}
+// whole-video 분석(다양성·분량 예산)은 '파일당 한 가지 분석' 원칙으로 별도 모듈로 분리했다.
+// 기존 import 경로(./script-lint.js)를 깨지 않도록 여기서 re-export한다.
+export * from "./script-diversity.js";
+export * from "./script-scene-length.js";

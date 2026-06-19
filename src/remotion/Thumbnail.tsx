@@ -1,6 +1,7 @@
-import { AbsoluteFill, Img, staticFile } from "remotion";
+import { AbsoluteFill, Img } from "remotion";
 import { z } from "zod";
 import { colors, typography } from "./theme/index.js";
+import { resolveMediaSrc } from "./scenes/_media.js";
 
 // 독립 썸네일 컴포지션 — Episode 파이프라인과 무관. 운영자가 고른 커버 이미지 위에
 // 제목을 얹는다. `npx remotion still src/remotion/thumbnail-index.ts Thumbnail ...`로 렌더.
@@ -17,10 +18,6 @@ export const ThumbnailPropsSchema = z.object({
 
 export type ThumbnailProps = z.infer<typeof ThumbnailPropsSchema>;
 
-function resolveSrc(src: string): string {
-  return /^https?:\/\//.test(src) ? src : staticFile(src);
-}
-
 export function Thumbnail({ imageSrc, eyebrow, lines, side }: ThumbnailProps) {
   const scrim =
     side === "left"
@@ -30,7 +27,7 @@ export function Thumbnail({ imageSrc, eyebrow, lines, side }: ThumbnailProps) {
   return (
     <AbsoluteFill style={{ backgroundColor: colors.bg }}>
       <Img
-        src={resolveSrc(imageSrc)}
+        src={resolveMediaSrc(imageSrc)}
         style={{ width: "100%", height: "100%", objectFit: "cover" }}
       />
       {/* 가독성 스크림 + 바닥 보강 */}

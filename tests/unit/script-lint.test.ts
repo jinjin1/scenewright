@@ -217,6 +217,17 @@ describe("lintScript — sentence-end / TTS-cut risk", () => {
     );
     expect(f).toHaveLength(0);
   });
+
+  // The three sentence-end regexes were unified onto one trailing-punctuation class,
+  // which broadened the Latin-tail check to also catch a Latin token immediately
+  // followed by a closing quote (' or ”) — a real Supertonic cut risk that previously
+  // slipped through. Lock that intended coverage so a future change can't silently revert it.
+  it("warns on a Latin tail followed by a closing quote (TTS-cut risk)", () => {
+    for (const text of ["결론은 ROI”", "우리의 north star'"]) {
+      const f = lintScript(oneLine({ id: "l1", text })).filter((x) => x.rule === "sentence-end");
+      expect(f.some((x) => x.severity === "warn")).toBe(true);
+    }
+  });
 });
 
 describe("lintScript — TTS truncation risk (short line + risky ending)", () => {
