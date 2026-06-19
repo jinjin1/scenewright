@@ -30,7 +30,7 @@ import {
   saveIndex,
   searchIndex,
 } from "../stock/library.js";
-import type { MediaResult, MediaType, Provider } from "../stock/types.js";
+import type { MediaResult, MediaType } from "../stock/types.js";
 
 const VIDEO_EXTS = new Set(["mp4", "webm", "mov", "m4v"]);
 
