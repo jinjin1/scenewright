@@ -146,135 +146,137 @@ function visibleFields(visual: VisualSpec): VisibleField[] {
     (arr ?? []).forEach((v, i) => push(`${field}[${i}]`, v));
   };
 
-  const p = visual.props as Record<string, unknown>;
+  // visual은 discriminated union이라 case 안에서 visual.props가 해당 컴포넌트 props로
+  // 정밀하게 좁혀진다 — `as` 캐스트 없이 타입 안전하게 필드를 읽는다.
   switch (visual.component) {
     case "TitleCard":
-      push("title", p.title as string);
-      push("subtitle", p.subtitle as string);
-      push("eyebrow", p.eyebrow as string, false);
+      push("title", visual.props.title);
+      push("subtitle", visual.props.subtitle);
+      push("eyebrow", visual.props.eyebrow, false);
       break;
     case "BulletList":
-      push("heading", p.heading as string);
-      pushArr("items", p.items as string[]);
+      push("heading", visual.props.heading);
+      pushArr("items", visual.props.items);
       break;
     case "HighlightedLine":
-      push("text", p.text as string);
-      push("eyebrow", p.eyebrow as string, false);
+      push("text", visual.props.text);
+      push("eyebrow", visual.props.eyebrow, false);
       // highlights는 orphan 검사에서 별도로 다룸(여기선 screen-english용으로만).
-      pushArr("highlights", p.highlights as string[]);
+      pushArr("highlights", visual.props.highlights);
       break;
     case "ProgressiveList":
-      push("heading", p.heading as string);
-      push("eyebrow", p.eyebrow as string, false);
-      pushArr("items", p.items as string[]);
+      push("heading", visual.props.heading);
+      push("eyebrow", visual.props.eyebrow, false);
+      pushArr("items", visual.props.items);
       break;
     case "StatHero":
-      push("eyebrow", p.eyebrow as string, false);
-      push("caption", p.caption as string);
+      push("eyebrow", visual.props.eyebrow, false);
+      push("caption", visual.props.caption);
       // prefix/suffix($, %, x)는 화면 영어 검사 제외(단위라 의도적).
-      push("prefix", p.prefix as string, false);
-      push("suffix", p.suffix as string, false);
+      push("prefix", visual.props.prefix, false);
+      push("suffix", visual.props.suffix, false);
       break;
     case "SweepDivider":
-      push("eyebrow", p.eyebrow as string, false);
-      push("label", p.label as string);
-      push("caption", p.caption as string);
+      push("eyebrow", visual.props.eyebrow, false);
+      push("label", visual.props.label);
+      push("caption", visual.props.caption);
       break;
     case "GlitchTransition":
-      push("eyebrow", p.eyebrow as string, false);
-      push("label", p.label as string);
+      push("eyebrow", visual.props.eyebrow, false);
+      push("label", visual.props.label);
       break;
     case "TerminalCard":
       // CLI/코드라 Latin이 본질 — screen-english 제외.
-      push("windowTitle", p.windowTitle as string, false);
-      (p.lines as { text: string }[] | undefined)?.forEach((l, i) =>
-        push(`lines[${i}].text`, l.text, false),
-      );
+      push("windowTitle", visual.props.windowTitle, false);
+      visual.props.lines?.forEach((l, i) => push(`lines[${i}].text`, l.text, false));
       break;
     case "PixelTitle":
       // "영문/숫자 권장" 시그니처 — screen-english 제외.
-      push("label", p.label as string, false);
-      push("subtitle", p.subtitle as string, false);
+      push("label", visual.props.label, false);
+      push("subtitle", visual.props.subtitle, false);
       break;
     case "HeroImage":
-      push("title", p.title as string);
-      push("caption", p.caption as string);
-      push("eyebrow", p.eyebrow as string, false);
+      push("title", visual.props.title);
+      push("caption", visual.props.caption);
+      push("eyebrow", visual.props.eyebrow, false);
       break;
     case "SplitVisual":
-      push("heading", p.heading as string);
-      push("body", p.body as string);
-      push("eyebrow", p.eyebrow as string, false);
-      pushArr("items", p.items as string[]);
+      push("heading", visual.props.heading);
+      push("body", visual.props.body);
+      push("eyebrow", visual.props.eyebrow, false);
+      pushArr("items", visual.props.items);
       break;
     case "ScreenshotCallout":
-      push("eyebrow", p.eyebrow as string, false);
-      push("title", p.title as string);
-      push("caption", p.caption as string);
-      (p.annotations as { label?: string }[] | undefined)?.forEach((a, i) =>
+      push("eyebrow", visual.props.eyebrow, false);
+      push("title", visual.props.title);
+      push("caption", visual.props.caption);
+      visual.props.annotations?.forEach((a, i) =>
         push(`annotations[${i}].label`, a.label),
       );
       break;
     case "FlowDiagram":
-      push("eyebrow", p.eyebrow as string, false);
-      push("heading", p.heading as string);
-      (p.nodes as { label: string; sublabel?: string }[] | undefined)?.forEach((n, i) => {
+      push("eyebrow", visual.props.eyebrow, false);
+      push("heading", visual.props.heading);
+      visual.props.nodes?.forEach((n, i) => {
         push(`nodes[${i}].label`, n.label);
         push(`nodes[${i}].sublabel`, n.sublabel);
       });
       break;
     case "PixelBarChart":
-      push("eyebrow", p.eyebrow as string, false);
-      push("heading", p.heading as string);
-      push("caption", p.caption as string);
-      (p.bars as { label?: string }[] | undefined)?.forEach((b, i) =>
-        push(`bars[${i}].label`, b.label),
-      );
+      push("eyebrow", visual.props.eyebrow, false);
+      push("heading", visual.props.heading);
+      push("caption", visual.props.caption);
+      visual.props.bars?.forEach((b, i) => push(`bars[${i}].label`, b.label));
       break;
     case "PixelDonut":
-      push("eyebrow", p.eyebrow as string, false);
-      push("heading", p.heading as string);
-      push("caption", p.caption as string);
+      push("eyebrow", visual.props.eyebrow, false);
+      push("heading", visual.props.heading);
+      push("caption", visual.props.caption);
       break;
     case "PixelGauge":
-      push("eyebrow", p.eyebrow as string, false);
-      push("heading", p.heading as string);
-      push("label", p.label as string);
-      push("caption", p.caption as string);
+      push("eyebrow", visual.props.eyebrow, false);
+      push("heading", visual.props.heading);
+      push("label", visual.props.label);
+      push("caption", visual.props.caption);
       break;
     case "PixelStepTracker":
-      push("eyebrow", p.eyebrow as string, false);
-      push("heading", p.heading as string);
-      pushArr("steps", p.steps as string[]);
+      push("eyebrow", visual.props.eyebrow, false);
+      push("heading", visual.props.heading);
+      pushArr("steps", visual.props.steps);
       break;
     case "PixelRoadmap":
-      push("eyebrow", p.eyebrow as string, false);
-      push("heading", p.heading as string);
-      (p.milestones as { label: string }[] | undefined)?.forEach((m, i) =>
+      push("eyebrow", visual.props.eyebrow, false);
+      push("heading", visual.props.heading);
+      visual.props.milestones?.forEach((m, i) =>
         push(`milestones[${i}].label`, m.label),
       );
       break;
     case "DecisionMatrix":
-      push("eyebrow", p.eyebrow as string, false);
-      push("title", p.title as string);
-      (p.rows as { ko: string; en?: string }[] | undefined)?.forEach((r, i) => {
+      push("eyebrow", visual.props.eyebrow, false);
+      push("title", visual.props.title);
+      visual.props.rows?.forEach((r, i) => {
         push(`rows[${i}].ko`, r.ko);
         // en은 의도적 영어 병기 — screen-english 제외(eyebrow와 동일 정신).
         push(`rows[${i}].en`, r.en, false);
       });
       break;
     case "ReactionBeat":
-      push("eyebrow", p.eyebrow as string, false);
-      push("headline", p.headline as string);
+      push("eyebrow", visual.props.eyebrow, false);
+      push("headline", visual.props.headline);
       break;
     case "StarburstReveal":
-      push("eyebrow", p.eyebrow as string, false);
-      push("headline", p.headline as string);
-      push("caption", p.caption as string);
+      push("eyebrow", visual.props.eyebrow, false);
+      push("headline", visual.props.headline);
+      push("caption", visual.props.caption);
       break;
-    // StockBg: 화면에 노출되는 텍스트 없음.
-    default:
+    case "StockBg":
+      // 화면에 노출되는 텍스트 없음.
       break;
+    default: {
+      // 새 컴포넌트가 union에 추가됐는데 위 case를 빠뜨리면 tsc가 막는다(검사 누락 방지).
+      const _exhaustive: never = visual;
+      void _exhaustive;
+    }
   }
   return out;
 }
