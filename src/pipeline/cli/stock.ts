@@ -200,19 +200,40 @@ async function main(): Promise<void> {
       continue;
     }
 
-    const colorEntry = (mediaType: ManifestEntry["media_type"], keyword: string | null): ManifestEntry => ({
+    // 한 shot의 manifest entry를 만든다 — 공통 필드(base + 입력 스냅샷)를 한곳에서 채우고,
+    // 호출부는 미디어 종류별 필드(provider/경로/attribution 등)만 넘긴다. color·library·stock
+    // 세 갈래가 같은 `...base, …, input_*` 보일러플레이트를 반복하던 걸 단일화한다.
+    type EntryMedia = Pick<
+      ManifestEntry,
+      | "media_type"
+      | "keyword"
+      | "keywords"
+      | "provider"
+      | "local_path"
+      | "local_paths"
+      | "attribution"
+      | "attributions"
+    >;
+    const makeEntry = (media: EntryMedia): ManifestEntry => ({
       ...base,
-      media_type: mediaType,
-      keyword,
-      keywords: [],
-      provider: null,
-      local_path: null,
-      local_paths: [],
-      attribution: null,
-      attributions: [],
+      ...media,
       input_keywords: inputKeywords,
       input_image_ref: inputImageRef,
     });
+    const colorEntry = (
+      mediaType: ManifestEntry["media_type"],
+      keyword: string | null,
+    ): ManifestEntry =>
+      makeEntry({
+        media_type: mediaType,
+        keyword,
+        keywords: [],
+        provider: null,
+        local_path: null,
+        local_paths: [],
+        attribution: null,
+        attributions: [],
+      });
 
     const need = mediaNeedFor(shot);
     if (!need) {
@@ -230,19 +251,18 @@ async function main(): Promise<void> {
         console.log(
           `  ${shotId} library ${mt} [${shot.image_ref}] → ${dl.relPath}${dl.hit ? " (cached)" : ""}`,
         );
-        entries.push({
-          ...base,
-          media_type: mt,
-          keyword: shot.image_ref,
-          keywords: [shot.image_ref],
-          provider: "library",
-          local_path: dl.relPath,
-          local_paths: [dl.relPath],
-          attribution: null,
-          attributions: [],
-          input_keywords: inputKeywords,
-          input_image_ref: inputImageRef,
-        });
+        entries.push(
+          makeEntry({
+            media_type: mt,
+            keyword: shot.image_ref,
+            keywords: [shot.image_ref],
+            provider: "library",
+            local_path: dl.relPath,
+            local_paths: [dl.relPath],
+            attribution: null,
+            attributions: [],
+          }),
+        );
         continue;
       }
       console.warn(
@@ -295,19 +315,18 @@ async function main(): Promise<void> {
         `(${cachedCount} cached)`,
     );
 
-    entries.push({
-      ...base,
-      media_type: mediaType,
-      keyword: keywords[0] ?? shot.broll_keywords[0] ?? null,
-      keywords,
-      provider: assets[0]!.provider,
-      local_path: localPaths[0]!,
-      local_paths: localPaths,
-      attribution: assets[0]!,
-      attributions: assets,
-      input_keywords: inputKeywords,
-      input_image_ref: inputImageRef,
-    });
+    entries.push(
+      makeEntry({
+        media_type: mediaType,
+        keyword: keywords[0] ?? shot.broll_keywords[0] ?? null,
+        keywords,
+        provider: assets[0]!.provider,
+        local_path: localPaths[0]!,
+        local_paths: localPaths,
+        attribution: assets[0]!,
+        attributions: assets,
+      }),
+    );
     usedForAttribution.push(...assets);
   }
 
