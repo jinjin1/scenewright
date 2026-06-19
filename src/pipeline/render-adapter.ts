@@ -7,7 +7,7 @@
 
 import type { Script } from "../schemas/script.js";
 import type { Storyboard } from "../schemas/storyboard.js";
-import { toCaption } from "./captions.js";
+import { captionByShot } from "./captions.js";
 
 /** stock manifest entry 중 어댑터가 읽는 최소 형태(전체 스키마는 cli/stock.ts). */
 export interface RenderManifestEntry {
@@ -68,13 +68,9 @@ export function buildStockSrcByShotIndex(
 /**
  * EpisodeProps.captions (shot index → 화면 하단 자막 텍스트).
  *
- * render.md 의사코드와 동일: shot.audio_ref에서 line id를 떼고, script line의
- * text를 toCaption()으로 정제. 매칭 line이 없으면 빈 문자열(누락 cue 보존).
+ * 캡션 빌드 로직은 captions.ts의 `captionByShot`이 단일 소스다(SRT 경로와 공유).
+ * 여기서는 EpisodeProps 형태로 노출하는 얇은 어댑터만 유지한다.
  */
 export function buildCaptionsByShot(storyboard: Storyboard, script: Script): string[] {
-  const lineById = new Map(script.lines.map((l) => [l.id, l]));
-  return storyboard.shots.map((shot) => {
-    const id = shot.audio_ref.replace(/^assets\/audio\//, "").replace(/\.wav$/, "");
-    return toCaption(lineById.get(id)?.text ?? "");
-  });
+  return captionByShot(storyboard, script);
 }
