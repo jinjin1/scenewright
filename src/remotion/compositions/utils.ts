@@ -1,8 +1,29 @@
+import { interpolate } from "remotion";
 import type {
   Storyboard,
   StoryboardShot,
   TransitionName,
 } from "../../schemas/storyboard.js";
+
+// 오프닝 마스터 페이드업 길이(초). Episode가 비주얼 트랙에, thumbnail CLI가 "이 프레임은
+// 아직 페이드 중" 경고에 공유한다 — 단일 소스.
+export const OPENING_FADE_SEC = 0.5;
+
+// 오프닝 페이드업 opacity: 검정 백드롭 위 비주얼을 [0, sec] 구간에 0→1. 이후 clamp=1(무영향).
+// 순수 함수(테스트 가능) — Episode가 useCurrentFrame()으로 frame을 넘긴다.
+export function openingFadeOpacity(frame: number, fps: number, sec: number): number {
+  const end = Math.max(1, Math.round(sec * fps));
+  return interpolate(frame, [0, end], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+}
+
+// 오프닝 페이드가 끝나는(opacity=1 도달) 프레임. thumbnail CLI가 "이 프레임은 어두울 수 있음"
+// 가드에 쓴다.
+export function openingFadeEndFrame(fps: number, sec: number = OPENING_FADE_SEC): number {
+  return Math.max(1, Math.round(sec * fps));
+}
 
 // shot.duration_sec × fps → 정수 프레임 수 누적. 최소 1프레임 보장.
 export function calculateTotalFrames(storyboard: Storyboard): number {

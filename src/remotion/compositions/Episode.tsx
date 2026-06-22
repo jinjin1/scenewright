@@ -1,7 +1,8 @@
-import { AbsoluteFill, Audio, Sequence, staticFile } from "remotion";
+import { AbsoluteFill, Audio, Sequence, staticFile, useCurrentFrame } from "remotion";
 import { linearTiming, TransitionSeries } from "@remotion/transitions";
 import { z } from "zod";
 import { StoryboardSchema } from "../../schemas/storyboard.js";
+import { colors } from "../theme/index.js";
 import { BulletList } from "../scenes/BulletList.js";
 import { Captions } from "../scenes/Captions.js";
 import { DecisionMatrix } from "../scenes/DecisionMatrix.js";
@@ -30,6 +31,8 @@ import {
   buildStockSegments,
   buildTransitionLayout,
   groupConsecutiveByVisual,
+  OPENING_FADE_SEC,
+  openingFadeOpacity,
   shotStartFrames,
 } from "./utils.js";
 import { boundaryPresentations } from "./transitions.js";
@@ -55,8 +58,12 @@ export function Episode({
   stockSrcByShotIndex,
   captions,
 }: EpisodeProps) {
+  const frame = useCurrentFrame();
   const fps = storyboard.meta.fps;
   const transition = storyboard.meta.transition;
+
+  // 검정 백드롭 위로 비주얼을 ~0.5s 페이드인. clamp 이후엔 opacity 1이라 본편엔 무영향.
+  const openingFade = openingFadeOpacity(frame, fps, OPENING_FADE_SEC);
   const groups = groupConsecutiveByVisual(storyboard);
   const starts = shotStartFrames(storyboard);
   const layout = buildTransitionLayout(groups, transition, TRANSITION_BASE_FRAMES);
@@ -228,8 +235,11 @@ export function Episode({
   });
 
   return (
-    <AbsoluteFill>
-      <TransitionSeries>{visualChildren}</TransitionSeries>
+    <AbsoluteFill style={{ backgroundColor: colors.bg }}>
+      {/* 비주얼 트랙만 오프닝 페이드업 — 검정 백드롭에서 0.5s 페이드인(로딩 포스터 정리). */}
+      <AbsoluteFill style={{ opacity: openingFade }}>
+        <TransitionSeries>{visualChildren}</TransitionSeries>
+      </AbsoluteFill>
 
       {/* 오디오 트랙: 샷별 절대 위치. 전환 겹침과 독립이라 내레이션 타이밍 보존. */}
       {storyboard.shots.map((shot, i) => {

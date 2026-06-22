@@ -5,9 +5,13 @@ import {
   buildTransitionLayout,
   calculateTotalFrames,
   groupConsecutiveByVisual,
+  OPENING_FADE_SEC,
+  openingFadeEndFrame,
+  openingFadeOpacity,
   resolveBoundaryTransitions,
   shotStartFrames,
 } from "../../src/remotion/compositions/utils.js";
+import { captionOpacity, CAPTION_FADE } from "../../src/remotion/scenes/_captions.js";
 
 // Remotion 컴포넌트(JSX, useCurrentFrame)는 jsdom에서 직접 렌더 불안정 →
 // 컴포지션 동작의 핵심인 frame 계산 유틸만 단위 테스트로 검증.
@@ -295,5 +299,75 @@ describe("resolveBoundaryTransitions", () => {
       { scene: "scene02", dur: 2, t: "none" },
     ]);
     expect(resolveBoundaryTransitions(groups, "varied")).toEqual([null]);
+  });
+});
+
+// 오프닝 마스터 페이드업 — frame 0 검정 → end 프레임에서 1, 이후 clamp.
+describe("openingFadeOpacity", () => {
+  it("frame 0 → 0, end(=round(sec*fps)) → 1, 이후 clamp 1", () => {
+    expect(openingFadeOpacity(0, 30, 0.5)).toBe(0);
+    expect(openingFadeOpacity(15, 30, 0.5)).toBe(1); // round(0.5*30)=15
+    expect(openingFadeOpacity(30, 30, 0.5)).toBe(1); // 이후 무영향
+    expect(openingFadeOpacity(7, 30, 0.5)).toBeCloseTo(7 / 15, 5);
+  });
+
+  it("음수 프레임은 좌측 clamp 0", () => {
+    expect(openingFadeOpacity(-5, 30, 0.5)).toBe(0);
+  });
+
+  it("sec=0이어도 0폭 입력 없이 안전(end 최소 1)", () => {
+    expect(openingFadeOpacity(0, 30, 0)).toBe(0);
+    expect(openingFadeOpacity(1, 30, 0)).toBe(1);
+  });
+
+  it("openingFadeEndFrame = round(sec*fps), 기본 sec=OPENING_FADE_SEC", () => {
+    expect(OPENING_FADE_SEC).toBe(0.5);
+    expect(openingFadeEndFrame(30)).toBe(15);
+    expect(openingFadeEndFrame(24, 0.5)).toBe(12);
+  });
+});
+
+// 자막 침묵-경계 페이드 + 짧은 cue clamp.
+describe("captionOpacity", () => {
+  it("연속 자막(앞뒤 텍스트 있음)은 하드 컷 = 항상 1", () => {
+    const o = (frame: number) =>
+      captionOpacity({ frame, startFrame: 0, endFrame: 120, gapBefore: false, gapAfter: false });
+    expect(o(0)).toBe(1);
+    expect(o(3)).toBe(1);
+    expect(o(60)).toBe(1);
+    expect(o(119)).toBe(1);
+  });
+
+  it("첫 자막(gapBefore)은 [start, start+CAPTION_FADE] 페이드인, 끝은 컷", () => {
+    const args = { startFrame: 0, endFrame: 120, gapBefore: true, gapAfter: false };
+    expect(captionOpacity({ ...args, frame: 0 })).toBe(0);
+    expect(captionOpacity({ ...args, frame: CAPTION_FADE / 2 })).toBeCloseTo(0.5, 5);
+    expect(captionOpacity({ ...args, frame: CAPTION_FADE })).toBe(1);
+    expect(captionOpacity({ ...args, frame: 119 })).toBe(1); // gapAfter=false → 끝 컷
+  });
+
+  it("마지막 자막(gapAfter)은 [end-CAPTION_FADE, end] 페이드아웃, 시작은 컷", () => {
+    const args = { startFrame: 0, endFrame: 120, gapBefore: false, gapAfter: true };
+    expect(captionOpacity({ ...args, frame: 0 })).toBe(1); // gapBefore=false → 시작 컷
+    expect(captionOpacity({ ...args, frame: 120 - CAPTION_FADE })).toBe(1);
+    expect(captionOpacity({ ...args, frame: 120 - CAPTION_FADE / 2 })).toBeCloseTo(0.5, 5);
+    expect(captionOpacity({ ...args, frame: 120 })).toBe(0);
+  });
+
+  it("짧은 고립 cue(span < 2*fade)도 clamp 덕에 full opacity에 도달한다", () => {
+    // span 8 < 12 → fade=floor(8/2)=4. 중앙(frame 4)에서 fadeIn=fadeOut=1 → 1.
+    const args = { startFrame: 0, endFrame: 8, gapBefore: true, gapAfter: true };
+    expect(captionOpacity({ ...args, frame: 0 })).toBe(0);
+    expect(captionOpacity({ ...args, frame: 4 })).toBe(1);
+    expect(captionOpacity({ ...args, frame: 8 })).toBe(0);
+  });
+
+  it("span<2(또는 0)는 fade=0으로 떨어져 즉시 full opacity(0폭 입력 회피)", () => {
+    expect(
+      captionOpacity({ frame: 0, startFrame: 0, endFrame: 1, gapBefore: true, gapAfter: true }),
+    ).toBe(1);
+    expect(
+      captionOpacity({ frame: 5, startFrame: 5, endFrame: 5, gapBefore: true, gapAfter: true }),
+    ).toBe(1);
   });
 });
