@@ -261,6 +261,7 @@ StarburstReveal:  { eyebrow?: string, headline: string,  // 키워드·펀치라
 > - **Opening 씬(scene01)은 콜드 오픈 — 첫 shot은 정적 TitleCard 금지** (`@VOICE.md §4`). 영상 첫 0~3초가 후킹의 핵심이라 내레이션(구체 장면·반전)과 화면이 *같이* 콜드 오픈해야 한다(양면 일치). **첫 shot이 영상 제목 카드면 콜드 오픈이 깨진다** — 제목 카드는 인사 비트로 민다. `npm run lint:script`의 `weak-opening`이 경고한다(첫 라인 내레이션이 "안녕하세요~"로 시작하거나 첫 visual이 TitleCard일 때).
 >   - 권장 패턴: `line01 = 콜드 오픈 비주얼 훅 + 내레이션은 구체 장면·반전 → line02 인사+제목 TitleCard ("안녕하세요. 이번 영상은 ~") → line03 HighlightedLine (오늘의 한 줄 결론, 키워드 강조) → line04 ProgressiveList (시청자가 영상 끝에 얻을 것 3~5개)`.
 >   - **line01 비주얼은 내레이션 콜드 오픈을 받쳐야 한다**: 내레이션이 구체 장면("버튼 색 하나 바꿨더니…")이면 그 장면을 HeroImage/StockBg(구체 b-roll)로, 반전 키워드("근데 진짜 문제는…")면 GlitchTransition/StarburstReveal로, 강한 한 줄이면 HighlightedLine(키워드 강조)으로. 추상 개념이라 구체 장면이 안 떠오르면 StockBg 말고 키네틱 텍스트·다이어그램으로(stock 억지 금지).
+>   - **line01(콜드 오픈)에는 화면 텍스트 오버레이를 달지 말 것** — HeroImage `caption`/`title`/`eyebrow`, SplitVisual `heading` 등 라벨성 텍스트를 첫 shot에 넣으면, 바로 뒤 line02 TitleCard보다 "태그라인"이 먼저 떠 제목을 앞지르고 어색하다. 첫 shot은 **b-roll(비주얼) + 하단 내레이션 자막만**으로 콜드 오픈하고, 제목·요약 텍스트는 line02 TitleCard에 맡긴다. (캡션 라벨은 본론의 HeroImage shot부터 쓴다.)
 > - **본론 씬도 60초 넘는 같은 visual 금지**. 정의·예시·반전 단계마다 visual 바꿔 시청자 시선 유지. HighlightedLine·StatHero·SweepDivider·GlitchTransition을 사이사이 끼워 결을 깬다.
 > - **챕터 경계는 SweepDivider 권장** — 같은 톤이 너무 길게 이어지면 SweepDivider 1라인으로 결을 끊는 게 효과적. 영상에서 챕터 헤더 직전.
 > - StockBg 매칭이 실패할 수 있으므로(추상 키워드일수록 0건 확률 높음) HighlightedLine·ProgressiveList로 정보를 함께 담아 폴백 시에도 화면이 빈약하지 않게. 단 매칭 실패가 두려워 StockBg를 *기피*하지는 말 것 — 키워드를 구체적으로 3~5개 주면 카스케이드가 거의 매치한다.
