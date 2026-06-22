@@ -8,7 +8,6 @@
         "props": {
           "kind": "video",
           "overlay": "bottom",
-          "caption": "같은 태양빛, 다른 하늘색",
           "fallback_color": "#1c2b4a"
         }
       },
