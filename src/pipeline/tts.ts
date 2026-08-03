@@ -7,7 +7,10 @@ import { promisify } from "node:util";
 const execFileAsync = promisify(execFile);
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const PYTHON_BIN = path.join(REPO_ROOT, "python/.venv/bin/python");
+const PYTHON_BIN = path.join(
+  REPO_ROOT,
+  process.platform === "win32" ? "python/.venv/Scripts/python.exe" : "python/.venv/bin/python",
+);
 const SYNTH_SCRIPT = path.join(REPO_ROOT, "python/synthesize.py");
 
 export interface TTSLine {
