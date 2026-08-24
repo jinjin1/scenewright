@@ -73,6 +73,13 @@ async function findExisting(dir: string, prefix: string): Promise<string | null>
   }
 }
 
+// manifest.json에 기록되는 경로는 항상 forward-slash가 계약이다 — render-adapter가
+// `episodes/${slug}/` prefix를 문자열로 떼어내므로 Windows의 path.relative가 주는
+// 백슬래시를 그대로 두면 prefix 제거가 실패해 b-roll이 사라진다.
+function relToRoot(abs: string): string {
+  return path.relative(process.cwd(), abs).split(path.sep).join("/");
+}
+
 export interface DownloadResult {
   /** Absolute path of the episode-local cached file (what Remotion/reconcile read). */
   path: string;
@@ -153,9 +160,9 @@ export async function download(media: MediaResult, slug: string): Promise<Downlo
 
   return {
     path: episodeFile,
-    relPath: path.relative(process.cwd(), episodeFile),
+    relPath: relToRoot(episodeFile),
     hit: !networkFetched, // 네트워크를 안 탔으면(풀 히트 또는 에피소드 시드) hit=true.
-    poolRelPath: path.relative(process.cwd(), poolFile),
+    poolRelPath: relToRoot(poolFile),
   };
 }
 
@@ -173,12 +180,12 @@ export async function ensureInPool(
   const prefix = `${media.provider}-${cacheKey(media)}`;
   const existing = await findExisting(pool, prefix);
   if (existing) {
-    return { poolRelPath: path.relative(process.cwd(), existing), hit: true };
+    return { poolRelPath: relToRoot(existing), hit: true };
   }
   const ext = path.extname(srcAbs).slice(1).toLowerCase() || "bin";
   const dest = path.join(pool, `${prefix}.${ext}`);
   await copyAtomic(srcAbs, dest);
-  return { poolRelPath: path.relative(process.cwd(), dest), hit: false };
+  return { poolRelPath: relToRoot(dest), hit: false };
 }
 
 /**
@@ -233,7 +240,7 @@ export async function copyIntoCache(
 
   const existing = await findExisting(dir, filenamePrefix);
   if (existing) {
-    return { path: existing, relPath: path.relative(process.cwd(), existing), hit: true };
+    return { path: existing, relPath: relToRoot(existing), hit: true };
   }
 
   const ext = path.extname(absSrc).slice(1).toLowerCase() || "bin";
@@ -247,5 +254,5 @@ export async function copyIntoCache(
     throw err;
   }
 
-  return { path: finalPath, relPath: path.relative(process.cwd(), finalPath), hit: false };
+  return { path: finalPath, relPath: relToRoot(finalPath), hit: false };
 }
